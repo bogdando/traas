@@ -3,7 +3,7 @@ parameters:
   overcloud_image: CentOS-7-x86_64-GenericCloud-1703
   key_name: bdobreli-rdo-cloud
   private_net: private
-  overcloud_node_count: 1
+  overcloud_node_count: 0
   public_net:  38.145.32.0/22
   undercloud_image: CentOS-7-x86_64-GenericCloud-1703
   undercloud_flavor: m1.large
@@ -14,5 +14,5 @@ parameters:
   #toci_jobtype: ovb-containers-oooq
   toci_jobtype: undercloud-containers
   undercloud_user_data: jenkins
-  tripleo_ci_remote: https://github.com/openstack-infra/tripleo-ci
-  tripleo_ci_branch: master
+  #tripleo_ci_remote: https://github.com/openstack-infra/tripleo-ci
+  #tripleo_ci_branch: master
