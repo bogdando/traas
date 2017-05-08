@@ -62,6 +62,7 @@ resources:
         echo export TRIPLEO_CI_REMOTE=\"$TRIPLEO_CI_REMOTE\" >> /etc/profile.d/traas.sh
         echo export TRIPLEO_CI_BRANCH=\"$TRIPLEO_CI_BRANCH\" >> /etc/profile.d/traas.sh
         echo export NODEPOOL_DOCKER_REGISTRY_PROXY=\"$NODEPOOL_DOCKER_REGISTRY_PROXY\" >> /etc/profile.d/traas.sh
+        useradd jenkins -G root -s /bin/bash -d /home/jenkins
         mkdir -p /etc/nodepool /etc/ci
         touch /etc/nodepool/provider
         touch /etc/ci/mirror_info.sh
@@ -70,7 +71,9 @@ resources:
         fi
         cp /etc/nodepool/id_rsa* /home/centos/.ssh
         cat /etc/nodepool/id_rsa.pub >> /home/centos/.ssh/authorized_keys
-        chown -R centos.centos /home/centos /etc/nodepool /etc/ci
+        cp -r /home/centos/.ssh /home/jenkins
+        chown -R centos.centos /home/centos
+        chown -R jenkins. /home/jenkins /etc/nodepool /etc/ci
         mkdir -p $heat_outputs_path
         cp /etc/nodepool/id_rsa.pub $heat_outputs_path.public_key
       inputs:
@@ -143,6 +146,7 @@ resources:
             #!/bin/bash
             set -eux
             echo $public_key >> /home/centos/.ssh/authorized_keys
+            echo $public_key >> /home/jenkins/.ssh/authorized_keys
 
             $disconnect_snippet
           params:
@@ -182,8 +186,8 @@ resources:
             $disconnect_snippet
 
             rpm -q git || yum -y install git
-            su -l centos -c "git clone -b traas https://github.com/bogdando/traas"
-            su -l centos -c /home/centos/traas/scripts/traas.sh &
+            su -l jenkins -c "git clone -b traas https://github.com/bogdando/traas"
+            su -l jenkins -c /home/jenkins/traas/scripts/traas.sh &
 
             # This is pretty hacky, meh.
             rpm -q psmisc || yum -y install psmisc
