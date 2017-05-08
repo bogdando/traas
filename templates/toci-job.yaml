@@ -177,7 +177,7 @@ resources:
             $disconnect_snippet
 
             rpm -q git || yum -y install git
-            su -l centos -c "git clone https://github.com/slagle/traas"
+            su -l centos -c "git clone -b traas https://github.com/bogdando/traas"
             su -l centos -c /home/centos/traas/scripts/traas.sh &
 
             # This is pretty hacky, meh.
