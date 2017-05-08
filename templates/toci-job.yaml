@@ -56,6 +56,7 @@ resources:
         echo export ZUUL_CHANGES=\"$ZUUL_CHANGES\" >> /etc/profile.d/traas.sh
         echo export TRIPLEO_CI_REMOTE=\"$TRIPLEO_CI_REMOTE\" >> /etc/profile.d/traas.sh
         echo export TRIPLEO_CI_BRANCH=\"$TRIPLEO_CI_BRANCH\" >> /etc/profile.d/traas.sh
+        echo export NODEPOOL_DOCKER_REGISTRY_PROXY=\"$NODEPOOL_DOCKER_REGISTRY_PROXY\" >> /etc/profile.d/traas.sh
         mkdir -p /etc/nodepool /etc/ci
         touch /etc/nodepool/provider
         touch /etc/ci/mirror_info.sh
@@ -86,6 +87,9 @@ resources:
         - name: TRIPLEO_CI_BRANCH
           type: String
           description: Git branch to use for tripleo-ci repository
+        - name: NODEPOOL_DOCKER_REGISTRY_PROXY
+          type: String
+          description: A docker registry proxy
       outputs:
         - name: public_key
           description: public key
@@ -106,6 +110,7 @@ resources:
         TOCI_JOBTYPE: {get_param: toci_jobtype}
         TRIPLEO_CI_REMOTE: {get_param: tripleo_ci_remote}
         TRIPLEO_CI_BRANCH: {get_param: tripleo_ci_branch}
+        NODEPOOL_DOCKER_REGISTRY_PROXY: {get_param: undercloud_docker_registry_mirror}
 
   DisconnectFromHostHeat:
     type: OS::Heat::Value

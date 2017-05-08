@@ -54,6 +54,11 @@ parameters:
     default: CentOS-7-x86_64-GenericCloud-1503
     description: Image to boot as the undercloud instance
 
+  undercloud_docker_registry_mirror:
+    type: string
+    default: ""
+    description: A docker registry mirror
+
   toci_jobtype:
     type: string
     default: multinode-nonha-oooq
