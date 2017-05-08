@@ -56,13 +56,15 @@ resources:
         echo export ZUUL_CHANGES=\"$ZUUL_CHANGES\" >> /etc/profile.d/traas.sh
         echo export TRIPLEO_CI_REMOTE=\"$TRIPLEO_CI_REMOTE\" >> /etc/profile.d/traas.sh
         echo export TRIPLEO_CI_BRANCH=\"$TRIPLEO_CI_BRANCH\" >> /etc/profile.d/traas.sh
-        mkdir -p /etc/nodepool
+        mkdir -p /etc/nodepool /etc/ci
+        touch /etc/nodepool/provider
+        touch /etc/ci/mirror_info.sh
         if [ ! -f /etc/nodepool/id_rsa ]; then
           ssh-keygen -t rsa -f /etc/nodepool/id_rsa
         fi
         cp /etc/nodepool/id_rsa* /home/centos/.ssh
         cat /etc/nodepool/id_rsa.pub >> /home/centos/.ssh/authorized_keys
-        chown -R centos.centos /home/centos /etc/nodepool
+        chown -R centos.centos /home/centos /etc/nodepool /etc/ci
         mkdir -p $heat_outputs_path
         cp /etc/nodepool/id_rsa.pub $heat_outputs_path.public_key
       inputs:
