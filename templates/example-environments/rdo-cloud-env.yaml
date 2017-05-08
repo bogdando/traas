@@ -8,6 +8,8 @@ parameters:
   undercloud_image: CentOS-7-x86_64-GenericCloud-1703
   undercloud_flavor: m1.large
   undercloud_docker_registry_mirror: http://mirror.regionone.tripleo-test-cloud-rh1.openstack.org:8081/registry-1.docker
+  job_timeout: 180
+  overcloud_deploy_timeout: 150
   #toci_jobtype: multinode-1ctlr-featureset004
   #toci_jobtype: ovb-containers-oooq
   toci_jobtype: undercloud-containers

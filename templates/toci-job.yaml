@@ -45,6 +45,16 @@ parameters:
     default: ""
     description: A docker registry mirror
 
+  job_timeout:
+    type: string
+    default: 180
+    description: A job timeout
+
+  overcloud_deploy_timeout:
+    type: string
+    default: 150
+    description: An overcloud deployment timeout
+
 resources:
 
   TociJobUndercloudConfig:
@@ -64,6 +74,8 @@ resources:
             echo export TRIPLEO_CI_REMOTE=\"$TRIPLEO_CI_REMOTE\" >> /etc/profile.d/traas.sh
             echo export TRIPLEO_CI_BRANCH=\"$TRIPLEO_CI_BRANCH\" >> /etc/profile.d/traas.sh
             echo export NODEPOOL_DOCKER_REGISTRY_PROXY=\"$NODEPOOL_DOCKER_REGISTRY_PROXY\" >> /etc/profile.d/traas.sh
+            echo export REMAINING_TIME=\"$REMAINING_TIME\" >> /etc/profile.d/traas.sh
+            echo export OVERCLOUD_DEPLOY_TIMEOUT=\"$OVERCLOUD_DEPLOY_TIMEOUT\" >> /etc/profile.d/traas.sh
             mkdir -p /etc/nodepool /etc/ci
             touch /etc/nodepool/provider
             touch /etc/ci/mirror_info.sh
@@ -98,6 +110,12 @@ resources:
         - name: NODEPOOL_DOCKER_REGISTRY_PROXY
           type: String
           description: A docker registry proxy
+        - name: REMAINING_TIME
+          type: String
+          description: A job timeout
+        - name: OVERCLOUD_DEPLOY_TIMEOUT
+          type: String
+          description: An overcloud deploy timeout
       outputs:
         - name: public_key
           description: public key
@@ -119,13 +137,15 @@ resources:
         TRIPLEO_CI_REMOTE: {get_param: tripleo_ci_remote}
         TRIPLEO_CI_BRANCH: {get_param: tripleo_ci_branch}
         NODEPOOL_DOCKER_REGISTRY_PROXY: {get_param: undercloud_docker_registry_mirror}
+        REMAINING_TIME: {get_param: job_timeout}
+        OVERCLOUD_DEPLOY_TIMEOUT: {get_param: overcloud_deploy_timeout}
 
   CentosToJenkins:
     type: OS::Heat::Value
     properties:
       type: string
       value: |
-
+        # Hack jenkins from centos
         useradd jenkins -G root -s /bin/bash -d /home/jenkins || true
         cp -rf /home/centos/.ssh /home/jenkins
         chown -R jenkins. /home/jenkins
@@ -226,6 +246,15 @@ resources:
         - name: TRIPLEO_CI_BRANCH
           type: String
           description: Git branch to use for tripleo-ci repository
+        - name: NODEPOOL_DOCKER_REGISTRY_PROXY
+          type: String
+          description: A docker registry proxy
+        - name: REMAINING_TIME
+          type: String
+          description: A job timeout
+        - name: OVERCLOUD_DEPLOY_TIMEOUT
+          type: String
+          description: An overcloud deploy timeout
 
   TociJobDeployment:
     type: OS::Heat::SoftwareDeployment
@@ -242,6 +271,9 @@ resources:
         TOCI_JOBTYPE: {get_param: toci_jobtype}
         TRIPLEO_CI_REMOTE: {get_param: tripleo_ci_remote}
         TRIPLEO_CI_BRANCH: {get_param: tripleo_ci_branch}
+        NODEPOOL_DOCKER_REGISTRY_PROXY: {get_param: undercloud_docker_registry_mirror}
+        REMAINING_TIME: {get_param: job_timeout}
+        OVERCLOUD_DEPLOY_TIMEOUT: {get_param: overcloud_deploy_timeout}
       signal_transport: NO_SIGNAL
 
 outputs:

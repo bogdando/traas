@@ -81,6 +81,15 @@ parameters:
     default: traas
     description: Git branch to use for tripleo-ci repository
 
+  job_timeout:
+    type: string
+    default: "180"
+    description: A toci job timeout
+
+  overcloud_deploy_timeout:
+    type: string
+    default: "150"
+    description: An overcloud deploy timeout
 
 resources:
 
@@ -150,6 +159,8 @@ resources:
       undercloud: {get_attr: [undercloud, undercloud_server]}
       undercloud_private_ip: {get_attr: [undercloud, undercloud_private_ip]}
       undercloud_docker_registry_mirror: {get_param: undercloud_docker_registry_mirror}
+      job_timeout: {get_param: job_timeout}
+      overcloud_deploy_timeout: {get_param: overcloud_deploy_timeout}
       overcloud_nodes: {get_attr: [overcloud_nodes, resource.overcloud_nodes, attributes, overcloud_node]}
       overcloud_private_ips: {get_attr: [overcloud_nodes, resource.overcloud_nodes, overcloud_private_ip]}
       toci_jobtype: {get_param: toci_jobtype}
