@@ -40,6 +40,11 @@ parameters:
                  this build is dependent upon in the form of a colon character separated
                  list consisting of project name, target branch, and revision ref.
 
+  undercloud_docker_registry_mirror:
+    type: string
+    default: ""
+    description: A docker registry mirror
+
 resources:
 
   TociJobUndercloudConfig:
