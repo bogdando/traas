@@ -8,6 +8,17 @@ The Heat templates are used to bring up a multinode environment, and then
 trigger some SoftwareDeployment resources on the undercloud node to
 execute a tripleo-ci job.
 
+Use it as::
+  $ mkvirtualenv ocata
+  $ wget https://raw.githubusercontent.com/openstack/requirements/stable/ocata/upper-constraints.txt -O /tmp/ocata
+  $ pip install -c /tmp/ocata python-openstackclient python-heatclient
+  $ git clone -b traas https://github.com/bogdando/traas.git
+  $ openstack --os-cloud rdo-cloud stack create foo \
+  -t traas/templates/traas.yaml \
+  -e traas/templates/traas-resource-registry.yaml \
+  -e traas/templates/example-environments/rdo-cloud-env.yaml \
+  --wait
+
 The main template is::
 
 	 templates/traas.yaml
