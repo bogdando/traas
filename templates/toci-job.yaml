@@ -62,7 +62,6 @@ resources:
         echo export TRIPLEO_CI_REMOTE=\"$TRIPLEO_CI_REMOTE\" >> /etc/profile.d/traas.sh
         echo export TRIPLEO_CI_BRANCH=\"$TRIPLEO_CI_BRANCH\" >> /etc/profile.d/traas.sh
         echo export NODEPOOL_DOCKER_REGISTRY_PROXY=\"$NODEPOOL_DOCKER_REGISTRY_PROXY\" >> /etc/profile.d/traas.sh
-        useradd jenkins -G root -s /bin/bash -d /home/jenkins
         mkdir -p /etc/nodepool /etc/ci
         touch /etc/nodepool/provider
         touch /etc/ci/mirror_info.sh
@@ -71,11 +70,12 @@ resources:
         fi
         cp /etc/nodepool/id_rsa* /home/centos/.ssh
         cat /etc/nodepool/id_rsa.pub >> /home/centos/.ssh/authorized_keys
-        cp -r /home/centos/.ssh /home/jenkins
-        chown -R centos.centos /home/centos
-        chown -R jenkins. /home/jenkins /etc/nodepool /etc/ci
+        $users_snippet
+        chown -R jenkins. /etc/nodepool /etc/ci
         mkdir -p $heat_outputs_path
         cp /etc/nodepool/id_rsa.pub $heat_outputs_path.public_key
+      params:
+        $users_snippet: {get_attr: [CentosToJenkins, value]}
       inputs:
         - name: PRIMARY_NODE_IP
           type: String
@@ -120,6 +120,16 @@ resources:
         TRIPLEO_CI_BRANCH: {get_param: tripleo_ci_branch}
         NODEPOOL_DOCKER_REGISTRY_PROXY: {get_param: undercloud_docker_registry_mirror}
 
+  CentosToJenkins:
+    type: OS::Heat::Value
+    properties:
+      type: string
+      value: |
+
+        useradd jenkins -G root -s /bin/bash -d /home/jenkins || true
+        cp -rf /home/centos/.ssh /home/jenkins
+        chown -R jenkins. /home/jenkins
+
   DisconnectFromHostHeat:
     type: OS::Heat::Value
     properties:
@@ -146,11 +156,11 @@ resources:
             #!/bin/bash
             set -eux
             echo $public_key >> /home/centos/.ssh/authorized_keys
-            echo $public_key >> /home/jenkins/.ssh/authorized_keys
-
+            $users_snippet
             $disconnect_snippet
           params:
             $disconnect_snippet: {get_attr: [DisconnectFromHostHeat, value]}
+            $users_snippet: {get_attr: [CentosToJenkins, value]}
       inputs:
         - name: public_key
           type: String
@@ -184,7 +194,7 @@ resources:
             set -eux
 
             $disconnect_snippet
-
+            $users_snippet
             rpm -q git || yum -y install git
             su -l jenkins -c "git clone -b dev https://github.com/bogdando/traas"
             su -l jenkins -c /home/jenkins/traas/scripts/traas.sh &
@@ -196,6 +206,7 @@ resources:
             exit 0
           params:
             $disconnect_snippet: {get_attr: [DisconnectFromHostHeat, value]}
+            $users_snippet: {get_attr: [CentosToJenkins, value]}
       inputs:
         - name: PRIMARY_NODE_IP
           type: String
