@@ -186,7 +186,7 @@ resources:
             $disconnect_snippet
 
             rpm -q git || yum -y install git
-            su -l jenkins -c "git clone -b traas https://github.com/bogdando/traas"
+            su -l jenkins -c "git clone -b dev https://github.com/bogdando/traas"
             su -l jenkins -c /home/jenkins/traas/scripts/traas.sh &
 
             # This is pretty hacky, meh.
