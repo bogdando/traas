@@ -86,6 +86,8 @@ resources:
             cat /etc/nodepool/id_rsa.pub >> /home/centos/.ssh/authorized_keys
             $users_snippet
             chown -R jenkins. /etc/nodepool /etc/ci
+            mkdir -p $heat_outputs_path
+            cp /etc/nodepool/id_rsa.pub $heat_outputs_path.public_key
           params:
             $users_snippet: {get_attr: [CentosToJenkins, value]}
       inputs:
