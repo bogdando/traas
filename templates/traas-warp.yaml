@@ -54,6 +54,11 @@ parameters:
     default: CentOS-7-x86_64-GenericCloud-1503
     description: Image to boot as the undercloud instance
 
+  undercloud_user_data:
+    type: string
+    default: ""
+    description: Userdata to inject into the undercloud instance
+
   overcloud_user_data:
     type: string
     default: ""
@@ -74,39 +79,23 @@ parameters:
     default: ""
     description: A docker registry mirror
 
-  toci_jobtype:
-    type: string
-    default: multinode-nonha-oooq
-    description: tripleo-ci jobtype as parsed by toci_gate_test.sh
-
-  zuul_changes:
-    type: string
-    default: ''
-    description: A caret character separated list of the changes upon which
-                 this build is dependent upon in the form of a colon character separated
-                 list consisting of project name, target branch, and revision ref.
-
-  tripleo_ci_remote:
-    type: string
-    default: "https://github.com/slagle/tripleo-ci"
-    description: Git remote to use for tripleo-ci repository
-
-  tripleo_ci_branch:
-    type: string
-    default: traas
-    description: Git branch to use for tripleo-ci repository
-
-  job_timeout:
-    type: string
-    default: "180"
-    description: A toci job timeout
-
-  overcloud_deploy_timeout:
-    type: string
-    default: "150"
-    description: An overcloud deploy timeout
-
 resources:
+
+  BootstrapMetadataScript:
+    type: OS::Heat::Value
+    properties:
+      type: string
+      value: |
+        #!/bin/sh
+        set -eux
+        #Set up tripleo repos:
+        rpm -q git || sudo yum -y install git
+        git clone https://git.openstack.org/openstack-infra/tripleo-ci
+        tripleo-ci/scripts/tripleo.sh --repo-setup
+        # Install and enable agent:
+        sudo yum -y install python-heat-agent*
+        sudo systemctl enable os-collect-config
+        sudo setenforce 0
 
   public_network:
     type: OS::TraaS::PublicNetwork
@@ -152,20 +141,9 @@ resources:
           - - {get_param: 'OS::stack_name'}
             - {get_param: overcloud_name}
 
-  toci_job:
-    type: OS::TraaS::TociJob
+  # TODO
+  oooq_warp_job:
+    type: OS::TraaS::OooqWarpJob
     depends_on: [undercloud, overcloud_nodes]
-    properties:
-      undercloud: {get_attr: [undercloud, undercloud_server]}
-      undercloud_private_ip: {get_attr: [undercloud, undercloud_private_ip]}
-      undercloud_docker_registry_mirror: {get_param: undercloud_docker_registry_mirror}
-      job_timeout: {get_param: job_timeout}
-      overcloud_deploy_timeout: {get_param: overcloud_deploy_timeout}
-      overcloud_nodes: {get_attr: [overcloud_nodes, resource.overcloud_nodes, attributes, overcloud_node]}
-      overcloud_private_ips: {get_attr: [overcloud_nodes, resource.overcloud_nodes, overcloud_private_ip]}
-      toci_jobtype: {get_param: toci_jobtype}
-      zuul_changes: {get_param: zuul_changes}
-      tripleo_ci_remote: {get_param: tripleo_ci_remote}
-      tripleo_ci_branch: {get_param: tripleo_ci_branch}
 
 outputs:

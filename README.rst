@@ -9,6 +9,7 @@ trigger some SoftwareDeployment resources on the undercloud node to
 execute a tripleo-ci job.
 
 Use it as::
+
   $ mkvirtualenv ocata
   $ wget https://raw.githubusercontent.com/openstack/requirements/stable/ocata/upper-constraints.txt -O /tmp/ocata
   $ pip install -c /tmp/ocata python-openstackclient python-heatclient
@@ -17,6 +18,15 @@ Use it as::
   -t traas/templates/traas.yaml \
   -e traas/templates/traas-resource-registry.yaml \
   -e traas/templates/example-environments/rdo-cloud-env.yaml \
+  --wait
+
+This launches the toci CI job from tripleo-ci defined jobs.
+If you want a custom job, like oooq-warp (WIP), use::
+
+  $ openstack --os-cloud rdo-cloud stack create foo \
+  -t templates/traas-warp.yaml \
+  -e templates/traas-warp-resource-registry.yaml \
+  -e templates/example-environments/rdo-cloud-warp-env.yaml \
   --wait
 
 The main template is::
