@@ -44,7 +44,7 @@ Once the nodes are up, the main script that is triggered is::
 	scripts/traas.sh
 
 The script logs to `tripleo-root/traas.log` in the home directory of the
-`jenkins` user. This logfile is equivalent to the upstream `console.html` output
+`centos` user. This logfile is equivalent to the upstream `console.html` output
 from a ci job.
 
 That is a simple wrapper around toci_gate_test.sh. The $TOCI_JOBTYPE variable

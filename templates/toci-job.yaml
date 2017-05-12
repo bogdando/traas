@@ -62,32 +62,27 @@ resources:
     properties:
       group: script
       config: |
-        str_replace:
-          template: |
-            #!/bin/bash
-            set -eux
-            rm -rf /etc/profile.d/traas.sh
-            echo export PRIMARY_NODE_IP=\"$PRIMARY_NODE_IP\" >> /etc/profile.d/traas.sh
-            echo export SUB_NODE_IPS=\"$SUB_NODE_IPS\" >> /etc/profile.d/traas.sh
-            echo export TOCI_JOBTYPE=\"$TOCI_JOBTYPE\" >> /etc/profile.d/traas.sh
-            echo export ZUUL_CHANGES=\"$ZUUL_CHANGES\" >> /etc/profile.d/traas.sh
-            echo export TRIPLEO_CI_REMOTE=\"$TRIPLEO_CI_REMOTE\" >> /etc/profile.d/traas.sh
-            echo export TRIPLEO_CI_BRANCH=\"$TRIPLEO_CI_BRANCH\" >> /etc/profile.d/traas.sh
-            echo export NODEPOOL_DOCKER_REGISTRY_PROXY=\"$NODEPOOL_DOCKER_REGISTRY_PROXY\" >> /etc/profile.d/traas.sh
-            echo export REMAINING_TIME=\"$REMAINING_TIME\" >> /etc/profile.d/traas.sh
-            echo export OVERCLOUD_DEPLOY_TIMEOUT=\"$OVERCLOUD_DEPLOY_TIMEOUT\" >> /etc/profile.d/traas.sh
-            mkdir -p /etc/nodepool /etc/ci
-            if [ ! -f /etc/nodepool/id_rsa ]; then
-              ssh-keygen -t rsa -f /etc/nodepool/id_rsa
-            fi
-            cp /etc/nodepool/id_rsa* /home/centos/.ssh
-            cat /etc/nodepool/id_rsa.pub >> /home/centos/.ssh/authorized_keys
-            $users_snippet
-            chown -R jenkins. /etc/nodepool /etc/ci
-            mkdir -p $heat_outputs_path
-            cp /etc/nodepool/id_rsa.pub $heat_outputs_path.public_key
-          params:
-            $users_snippet: {get_attr: [CentosToJenkins, value]}
+        #!/bin/bash
+        set -eux
+        rm -rf /etc/profile.d/traas.sh
+        echo export PRIMARY_NODE_IP=\"$PRIMARY_NODE_IP\" >> /etc/profile.d/traas.sh
+        echo export SUB_NODE_IPS=\"$SUB_NODE_IPS\" >> /etc/profile.d/traas.sh
+        echo export TOCI_JOBTYPE=\"$TOCI_JOBTYPE\" >> /etc/profile.d/traas.sh
+        echo export ZUUL_CHANGES=\"$ZUUL_CHANGES\" >> /etc/profile.d/traas.sh
+        echo export TRIPLEO_CI_REMOTE=\"$TRIPLEO_CI_REMOTE\" >> /etc/profile.d/traas.sh
+        echo export TRIPLEO_CI_BRANCH=\"$TRIPLEO_CI_BRANCH\" >> /etc/profile.d/traas.sh
+        echo export NODEPOOL_DOCKER_REGISTRY_PROXY=\"$NODEPOOL_DOCKER_REGISTRY_PROXY\" >> /etc/profile.d/traas.sh
+        echo export REMAINING_TIME=\"$REMAINING_TIME\" >> /etc/profile.d/traas.sh
+        echo export OVERCLOUD_DEPLOY_TIMEOUT=\"$OVERCLOUD_DEPLOY_TIMEOUT\" >> /etc/profile.d/traas.sh
+        mkdir -p /etc/nodepool
+        if [ ! -f /etc/nodepool/id_rsa ]; then
+          ssh-keygen -t rsa -f /etc/nodepool/id_rsa
+        fi
+        cp /etc/nodepool/id_rsa* /home/centos/.ssh
+        cat /etc/nodepool/id_rsa.pub >> /home/centos/.ssh/authorized_keys
+        chown -R centos.centos /home/centos /etc/nodepool
+        mkdir -p $heat_outputs_path
+        cp /etc/nodepool/id_rsa.pub $heat_outputs_path.public_key
       inputs:
         - name: PRIMARY_NODE_IP
           type: String
@@ -140,16 +135,6 @@ resources:
         REMAINING_TIME: {get_param: job_timeout}
         OVERCLOUD_DEPLOY_TIMEOUT: {get_param: overcloud_deploy_timeout}
 
-  CentosToJenkins:
-    type: OS::Heat::Value
-    properties:
-      type: string
-      value: |
-        # Hack jenkins from centos
-        useradd jenkins -G root -s /bin/bash -d /home/jenkins || :
-        cp -rf /home/centos/.ssh /home/jenkins
-        chown -R jenkins. /home/jenkins
-
   DisconnectFromHostHeat:
     type: OS::Heat::Value
     properties:
@@ -176,11 +161,10 @@ resources:
             #!/bin/bash
             set -eux
             echo $public_key >> /home/centos/.ssh/authorized_keys
-            $users_snippet
+
             $disconnect_snippet
           params:
             $disconnect_snippet: {get_attr: [DisconnectFromHostHeat, value]}
-            $users_snippet: {get_attr: [CentosToJenkins, value]}
       inputs:
         - name: public_key
           type: String
@@ -214,10 +198,10 @@ resources:
             set -eux
 
             $disconnect_snippet
-            $users_snippet
+
             rpm -q git || yum -y install git
-            su -l jenkins -c "git clone -b dev https://github.com/bogdando/traas"
-            su -l jenkins -c /home/jenkins/traas/scripts/traas.sh &
+            su -l centos -c "git clone https://github.com/slagle/traas"
+            su -l centos -c /home/centos/traas/scripts/traas.sh &
 
             # This is pretty hacky, meh.
             rpm -q psmisc || yum -y install psmisc
@@ -226,7 +210,6 @@ resources:
             exit 0
           params:
             $disconnect_snippet: {get_attr: [DisconnectFromHostHeat, value]}
-            $users_snippet: {get_attr: [CentosToJenkins, value]}
       inputs:
         - name: PRIMARY_NODE_IP
           type: String

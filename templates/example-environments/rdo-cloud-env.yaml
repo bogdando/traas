@@ -3,7 +3,7 @@ parameters:
   overcloud_image: CentOS-7-x86_64-GenericCloud-1703
   key_name: bdobreli-rdo-cloud
   private_net: private
-  overcloud_node_count: 0
+  overcloud_node_count: 1
   public_net:  38.145.32.0/22
   undercloud_image: CentOS-7-x86_64-GenericCloud-1703
   undercloud_flavor: m1.large
@@ -15,18 +15,3 @@ parameters:
   toci_jobtype: undercloud-containers
   #tripleo_ci_remote: https://github.com/openstack-infra/tripleo-ci
   #tripleo_ci_branch: master
-  undercloud_user_data:  |
-		#!/bin/sh
-		set -eux
-		#Set up tripleo repos:
-		rpm -q git || sudo yum -y install git
-		git clone https://git.openstack.org/openstack-infra/tripleo-ci
-		tripleo-ci/scripts/tripleo.sh --repo-setup
-		# Install and enable agent:
-		sudo yum -y install python-heat-agent*
-		sudo systemctl enable os-collect-config
-		# Delete enabled repos:
-		sudo rm -f /etc/yum.repos.d/delorean*
-  undercloud_user_data_format: RAW
-  overcloud_user_data: {get_param: undercloud_user_data}
-  overcloud_user_data_format: {get_param: undercloud_user_data_format}

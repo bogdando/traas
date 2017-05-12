@@ -81,22 +81,6 @@ parameters:
 
 resources:
 
-  BootstrapMetadataScript:
-    type: OS::Heat::Value
-    properties:
-      type: string
-      value: |
-        #!/bin/sh
-        set -eux
-        #Set up tripleo repos:
-        rpm -q git || sudo yum -y install git
-        git clone https://git.openstack.org/openstack-infra/tripleo-ci
-        tripleo-ci/scripts/tripleo.sh --repo-setup
-        # Install and enable agent:
-        sudo yum -y install python-heat-agent*
-        sudo systemctl enable os-collect-config
-        sudo setenforce 0
-
   public_network:
     type: OS::TraaS::PublicNetwork
     properties:

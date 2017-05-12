@@ -54,9 +54,36 @@ parameters:
     default: CentOS-7-x86_64-GenericCloud-1503
     description: Image to boot as the undercloud instance
 
+  undercloud_user_data:
+    type: string
+    default: |
+      #!/bin/bash
+      rpm -q git || yum -y install git
+      git clone https://git.openstack.org/openstack-infra/tripleo-ci
+      export HOME=/root
+      tripleo-ci/scripts/tripleo.sh --repo-setup
+      yum -y install python-heat-agent*
+      rm -f /etc/yum.repos.d/delorean*
+      rm -rf tripleo-ci
+      systemctl daemon-reload
+      systemctl enable os-collect-config
+      reboot
+    description: Userdata to inject into the undercloud instance
+
   overcloud_user_data:
     type: string
-    default: ""
+    default: |
+      #!/bin/bash
+      rpm -q git || yum -y install git
+      git clone https://git.openstack.org/openstack-infra/tripleo-ci
+      export HOME=/root
+      tripleo-ci/scripts/tripleo.sh --repo-setup
+      yum -y install python-heat-agent*
+      rm -f /etc/yum.repos.d/delorean*
+      rm -rf tripleo-ci
+      systemctl daemon-reload
+      systemctl enable os-collect-config
+      reboot
     description: Userdata to inject into the overcloud instances
 
   undercloud_user_data_format:
