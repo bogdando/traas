@@ -1,5 +1,5 @@
 parameters:
-  overcloud_flavor: m1.large
+  overcloud_flavor: m1.small
   overcloud_image: CentOS-7-x86_64-GenericCloud-1703
   key_name: bdobreli-rdo-cloud
   private_net: private
@@ -7,7 +7,6 @@ parameters:
   public_net:  38.145.32.0/22
   undercloud_image: CentOS-7-x86_64-GenericCloud-1703
   undercloud_flavor: m1.large
-  undercloud_docker_registry_mirror: http://mirror.regionone.tripleo-test-cloud-rh1.openstack.org:8081/registry-1.docker
   undercloud_user_data: |
     #!/bin/bash
     rpm -q git || yum -y install git
@@ -15,7 +14,6 @@ parameters:
     export HOME=/root
     tripleo-ci/scripts/tripleo.sh --repo-setup
     yum -y install python-heat-agent*
-    rm -rf tripleo-ci
     systemctl daemon-reload
     systemctl enable os-collect-config
     sudo setenforce 0
@@ -26,7 +24,6 @@ parameters:
     export HOME=/root
     tripleo-ci/scripts/tripleo.sh --repo-setup
     yum -y install python-heat-agent*
-    rm -rf tripleo-ci
     systemctl daemon-reload
     systemctl enable os-collect-config
     sudo setenforce 0

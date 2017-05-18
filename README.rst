@@ -24,9 +24,9 @@ This launches the toci CI job from tripleo-ci defined jobs.
 If you want a custom job, like oooq-warp (WIP), use::
 
   $ openstack --os-cloud rdo-cloud stack create foo \
-  -t templates/traas-warp.yaml \
-  -e templates/traas-warp-resource-registry.yaml \
-  -e templates/example-environments/rdo-cloud-warp-env.yaml \
+  -t templates/traas-oooq.yaml \
+  -e templates/traas-oooq-resource-registry.yaml \
+  -e templates/example-environments/rdo-cloud-oooq-env.yaml \
   --wait
 
 The main template is::

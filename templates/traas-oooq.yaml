@@ -74,11 +74,6 @@ parameters:
     default: SOFTWARE_CONFIG
     description: Userdata format for the overcloud instances
 
-  undercloud_docker_registry_mirror:
-    type: string
-    default: ""
-    description: A docker registry mirror
-
 resources:
 
   public_network:
@@ -125,9 +120,19 @@ resources:
           - - {get_param: 'OS::stack_name'}
             - {get_param: overcloud_name}
 
-  # TODO
-  oooq_warp_job:
-    type: OS::TraaS::OooqWarpJob
+  oooq_job:
+    type: OS::TraaS::OooqJob
     depends_on: [undercloud, overcloud_nodes]
+    properties:
+      undercloud: {get_attr: [undercloud, undercloud_server]}
+      undercloud_private_ip: {get_attr: [undercloud, undercloud_private_ip]}
+      overcloud_nodes: {get_attr: [overcloud_nodes, resource.overcloud_nodes, attributes, overcloud_node]}
+      overcloud_private_ips: {get_attr: [overcloud_nodes, resource.overcloud_nodes, overcloud_private_ip]}
 
 outputs:
+  ControllerIPs:
+    description: multinode CONTROLLER_IPS param for oooq
+    value: { get_attr: [oooq_job, overcloud_private_ips, 0] }
+  ComputeIPs:
+    description: multinode COMPUTE_IPS param for oooq
+    value: { get_attr: [oooq_job, overcloud_private_ips, 1] }

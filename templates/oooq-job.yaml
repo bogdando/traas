@@ -1,0 +1,165 @@
+heat_template_version: newton
+
+parameters:
+
+  undercloud:
+    type: string
+    description: Undercloud server resource
+
+  undercloud_private_ip:
+    type: string
+    description: undercloud private ip address
+
+  overcloud_nodes:
+    type: json
+    description: Overcloud server resources
+
+  overcloud_private_ips:
+    type: comma_delimited_list
+    description: Overcloud node private ip addresses
+
+resources:
+
+  OooqJobUndercloudConfig:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: script
+      config: |
+        #!/bin/bash
+        #FIXME(bogdando) this uses tripleo-ci nodepool boilerplates, should be oooq
+        set -eux
+        rm -rf /etc/profile.d/traas-oooq.sh
+        echo export PRIMARY_NODE_IP=\"$PRIMARY_NODE_IP\" >> /etc/profile.d/traas-oooq.sh
+        echo export SUB_NODE_IPS=\"$SUB_NODE_IPS\" >> /etc/profile.d/traas-oooq.sh
+        mkdir -p /etc/nodepool
+        if [ ! -f /etc/nodepool/id_rsa ]; then
+          ssh-keygen -t rsa -f /etc/nodepool/id_rsa
+        fi
+        cp /etc/nodepool/id_rsa* /home/centos/.ssh
+        cat /etc/nodepool/id_rsa.pub >> /home/centos/.ssh/authorized_keys
+        chown -R centos.centos /home/centos /etc/nodepool
+        mkdir -p $heat_outputs_path
+        cp /etc/nodepool/id_rsa.pub $heat_outputs_path.public_key
+      inputs:
+        - name: PRIMARY_NODE_IP
+          type: String
+          description: IP address of primary node (Undercloud)
+        - name: SUB_NODE_IPS
+          type: String
+          description: IP addresses of sub nodes (Overcloud nodes). Space separated list.
+      outputs:
+        - name: public_key
+          description: public key
+          type: String
+
+  OooqJobUndercloudDeployment:
+    type: OS::Heat::SoftwareDeployment
+    properties:
+      config: {get_resource: OooqJobUndercloudConfig}
+      server: {get_param: undercloud}
+      signal_transport: HEAT_SIGNAL
+      input_values:
+        PRIMARY_NODE_IP: {get_param: undercloud_private_ip}
+        SUB_NODE_IPS:
+          list_join:
+            - ' '
+            - {get_param: overcloud_private_ips}
+
+  DisconnectFromHostHeat:
+    type: OS::Heat::Value
+    properties:
+      type: string
+      value: |
+        # Disconnect this Node from the host cloud's Heat
+        systemctl stop os-collect-config
+        rm -rf /var/lib/os-collect-config/*
+        rm -rf /var/run/os-collect-config/*
+        rm -rf /var/lib/cloud/data/cfn-init-data
+        rm -f /var/lib/heat-cfntools/cfn-init-data
+        mkdir /var/lib/os-collect-config/local-data
+        echo '{ "os-collect-config": { "collectors": ["heat", "request", "local"], "command": "os-refresh-config" } }' > /var/lib/os-collect-config/local-data/00-os-collect-config
+        rm -f /etc/os-collect-config.conf
+        os-apply-config -m /var/lib/os-collect-config/local-data/00-os-collect-config
+
+  OooqJobOvercloudConfig:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: script
+      config:
+        str_replace:
+          template: |
+            #!/bin/bash
+            set -eux
+            echo $public_key >> /home/centos/.ssh/authorized_keys
+
+            $disconnect_snippet
+          params:
+            $disconnect_snippet: {get_attr: [DisconnectFromHostHeat, value]}
+      inputs:
+        - name: public_key
+          type: String
+          description: public key
+
+  OooqJobOvercloudDeployment:
+    type: OS::Heat::SoftwareDeploymentGroup
+    depends_on: [OooqJobUndercloudDeployment]
+    properties:
+      config: {get_resource: OooqJobOvercloudConfig}
+      servers: {get_param: overcloud_nodes}
+      signal_transport: HEAT_SIGNAL
+      input_values:
+        public_key: {get_attr: [OooqJobUndercloudDeployment, public_key]}
+
+  OooqJobNodeExtraConfig:
+    type: OS::TraaS::NodeExtraConfig
+    depends_on: [OooqJobOvercloudDeployment]
+    properties:
+      undercloud: {get_param: undercloud}
+      overcloud_nodes: {get_param: overcloud_nodes}
+
+  OooqJobConfig:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: script
+      config:
+        str_replace:
+          template: |
+            #!/bin/bash
+            set -eux
+
+            $disconnect_snippet
+
+            rpm -q git || yum -y install git
+            su -l centos -c "git clone -b dev https://github.com/bogdando/traas"
+            su -l centos -c /home/centos/traas/scripts/traas-oooq.sh
+
+            # This is pretty hacky, meh.
+            pkill -f -9 os-refresh-config
+            pkill -f -9 dib-run-parts
+            exit 0
+          params:
+            $disconnect_snippet: {get_attr: [DisconnectFromHostHeat, value]}
+      inputs:
+        - name: PRIMARY_NODE_IP
+          type: String
+          description: IP address of primary node (Undercloud)
+        - name: SUB_NODE_IPS
+          type: String
+          description: IP addresses of sub nodes (Overcloud nodes). Space separated list.
+
+
+  OooqJobDeployment:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: [OooqJobNodeExtraConfig]
+    properties:
+      config: {get_resource: OooqJobConfig}
+      server: {get_param: undercloud}
+      input_values:
+        PRIMARY_NODE_IP: {get_param: undercloud_private_ip}
+        SUB_NODE_IPS:
+          list_join:
+            - ' '
+            - {get_param: overcloud_private_ips}
+      signal_transport: NO_SIGNAL
+
+outputs:

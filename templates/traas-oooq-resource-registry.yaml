@@ -5,5 +5,5 @@ resource_registry:
   OS::TraaS::PublicNetwork: public-net-existing.yaml
   OS::TraaS::OvercloudNode: overcloud-node.yaml
   OS::TraaS::OvercloudNodes: overcloud-nodes.yaml
-  OS::TraaS::OooqWarpJob: OS::Heat::None
+  OS::TraaS::OooqJob: oooq-job.yaml
   OS::TraaS::NodeExtraConfig: OS::Heat::None
