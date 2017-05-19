@@ -59,25 +59,6 @@ parameters:
     default: CentOS-7-x86_64-GenericCloud-1503
     description: Image to boot as the undercloud instance
 
-  undercloud_user_data:
-    type: string
-    default: ""
-    description: Userdata to inject into the undercloud instance
-
-  overcloud_user_data:
-    type: string
-    default: ""
-    description: Userdata to inject into the overcloud instances
-
-  undercloud_user_data_format:
-    type: string
-    default: SOFTWARE_CONFIG
-    description: Userdata fromat for the undercloud instance
-
-  overcloud_user_data_format:
-    type: string
-    default: SOFTWARE_CONFIG
-    description: Userdata format for the overcloud instances
 
 resources:
 
@@ -91,6 +72,22 @@ resources:
     properties:
       private_net: {get_param: private_net}
 
+  user_data_script:
+    type: OS::Heat::Value
+    properties:
+      type: string
+      value: |
+        #!/bin/bash
+        rpm -q git || yum -y install git
+        git clone https://git.openstack.org/openstack-infra/tripleo-ci
+        export HOME=/root
+        tripleo-ci/scripts/tripleo.sh --repo-setup
+        yum -y install python-heat-agent*
+        systemctl daemon-reload
+        systemctl enable os-collect-config
+        systemctl start os-collect-config
+        sudo setenforce 0
+
   undercloud:
     depends_on: [public_network]
     type: OS::TraaS::Undercloud
@@ -103,8 +100,7 @@ resources:
           - '-'
           - - {get_param: 'OS::stack_name'}
             - {get_param: undercloud_name}
-      undercloud_user_data: {get_param: undercloud_user_data}
-      undercloud_user_data_format: {get_param: undercloud_user_data_format}
+      undercloud_user_data: {get_attr: [user_data_script, value]}
       private_net: {get_attr: [private_network, private_net]}
       public_net: {get_attr: [public_network, public_net]}
 
@@ -115,11 +111,10 @@ resources:
       overcloud_flavor: {get_param: overcloud_flavor}
       overcloud_image: {get_param: overcloud_image}
       key_name: {get_param: key_name}
-      overcloud_user_data: {get_param: overcloud_user_data}
-      overcloud_user_data_format: {get_param: overcloud_user_data_format}
       controller_node_count: {get_param: controller_node_count}
       compute_node_count: {get_param: compute_node_count}
       private_net: {get_attr: [private_network, private_net]}
+      overcloud_user_data: {get_attr: [user_data_script, value]}
       overcloud_name:
         list_join:
           - '-'

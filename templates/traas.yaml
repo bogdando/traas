@@ -54,53 +54,6 @@ parameters:
     default: CentOS-7-x86_64-GenericCloud-1503
     description: Image to boot as the undercloud instance
 
-  undercloud_user_data:
-    type: string
-    default: |
-      #!/bin/bash
-      rpm -q git || yum -y install git
-      git clone https://git.openstack.org/openstack-infra/tripleo-ci
-      export HOME=/root
-      tripleo-ci/scripts/tripleo.sh --repo-setup
-      yum -y install python-heat-agent*
-      rm -f /etc/yum.repos.d/delorean*
-      rm -rf tripleo-ci
-      systemctl daemon-reload
-      systemctl enable os-collect-config
-      reboot
-    description: Userdata to inject into the undercloud instance
-
-  overcloud_user_data:
-    type: string
-    default: |
-      #!/bin/bash
-      rpm -q git || yum -y install git
-      git clone https://git.openstack.org/openstack-infra/tripleo-ci
-      export HOME=/root
-      tripleo-ci/scripts/tripleo.sh --repo-setup
-      yum -y install python-heat-agent*
-      rm -f /etc/yum.repos.d/delorean*
-      rm -rf tripleo-ci
-      systemctl daemon-reload
-      systemctl enable os-collect-config
-      reboot
-    description: Userdata to inject into the overcloud instances
-
-  undercloud_user_data_format:
-    type: string
-    default: SOFTWARE_CONFIG
-    description: Userdata fromat for the undercloud instance
-
-  overcloud_user_data_format:
-    type: string
-    default: SOFTWARE_CONFIG
-    description: Userdata format for the overcloud instances
-
-  undercloud_docker_registry_mirror:
-    type: string
-    default: ""
-    description: A docker registry mirror
-
   toci_jobtype:
     type: string
     default: multinode-nonha-oooq
@@ -123,15 +76,6 @@ parameters:
     default: traas
     description: Git branch to use for tripleo-ci repository
 
-  job_timeout:
-    type: string
-    default: "180"
-    description: A toci job timeout
-
-  overcloud_deploy_timeout:
-    type: string
-    default: "150"
-    description: An overcloud deploy timeout
 
 resources:
 
@@ -145,6 +89,23 @@ resources:
     properties:
       private_net: {get_param: private_net}
 
+  user_data_script:
+    type: OS::Heat::Value
+    properties:
+      type: string
+      value: |
+        #!/bin/bash
+        rpm -q git || yum -y install git
+        git clone https://git.openstack.org/openstack-infra/tripleo-ci
+        export HOME=/root
+        tripleo-ci/scripts/tripleo.sh --repo-setup
+        yum -y install python-heat-agent*
+        rm -f /etc/yum.repos.d/delorean*
+        rm -rf tripleo-ci
+        systemctl daemon-reload
+        systemctl enable os-collect-config
+        reboot
+
   undercloud:
     depends_on: [public_network]
     type: OS::TraaS::Undercloud
@@ -157,8 +118,7 @@ resources:
           - '-'
           - - {get_param: 'OS::stack_name'}
             - {get_param: undercloud_name}
-      undercloud_user_data: {get_param: undercloud_user_data}
-      undercloud_user_data_format: {get_param: undercloud_user_data_format}
+      undercloud_user_data: {get_attr: [user_data_script, value]}
       private_net: {get_attr: [private_network, private_net]}
       public_net: {get_attr: [public_network, public_net]}
 
@@ -169,10 +129,9 @@ resources:
       overcloud_flavor: {get_param: overcloud_flavor}
       overcloud_image: {get_param: overcloud_image}
       key_name: {get_param: key_name}
-      overcloud_user_data: {get_param: overcloud_user_data}
-      overcloud_user_data_format: {get_param: overcloud_user_data_format}
       overcloud_node_count: {get_param: overcloud_node_count}
       private_net: {get_attr: [private_network, private_net]}
+      overcloud_user_data: {get_attr: [user_data_script, value]}
       overcloud_name:
         list_join:
           - '-'
@@ -185,9 +144,6 @@ resources:
     properties:
       undercloud: {get_attr: [undercloud, undercloud_server]}
       undercloud_private_ip: {get_attr: [undercloud, undercloud_private_ip]}
-      undercloud_docker_registry_mirror: {get_param: undercloud_docker_registry_mirror}
-      job_timeout: {get_param: job_timeout}
-      overcloud_deploy_timeout: {get_param: overcloud_deploy_timeout}
       overcloud_nodes: {get_attr: [overcloud_nodes, resource.overcloud_nodes, attributes, overcloud_node]}
       overcloud_private_ips: {get_attr: [overcloud_nodes, resource.overcloud_nodes, overcloud_private_ip]}
       toci_jobtype: {get_param: toci_jobtype}

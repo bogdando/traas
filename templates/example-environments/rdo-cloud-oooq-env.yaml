@@ -8,25 +8,3 @@ parameters:
   public_net:  38.145.32.0/22
   undercloud_image: CentOS-7-x86_64-GenericCloud-1703
   undercloud_flavor: m1.large
-  undercloud_user_data: |
-    #!/bin/bash
-    rpm -q git || yum -y install git
-    git clone https://git.openstack.org/openstack-infra/tripleo-ci
-    export HOME=/root
-    tripleo-ci/scripts/tripleo.sh --repo-setup
-    yum -y install python-heat-agent*
-    systemctl daemon-reload
-    systemctl enable os-collect-config
-    systemctl start os-collect-config
-    sudo setenforce 0
-  overcloud_user_data: |
-    #!/bin/bash
-    rpm -q git || yum -y install git
-    git clone https://git.openstack.org/openstack-infra/tripleo-ci
-    export HOME=/root
-    tripleo-ci/scripts/tripleo.sh --repo-setup
-    yum -y install python-heat-agent*
-    systemctl daemon-reload
-    systemctl enable os-collect-config
-    systemctl start os-collect-config
-    sudo setenforce 0
