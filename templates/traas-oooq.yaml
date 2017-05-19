@@ -78,15 +78,22 @@ resources:
       type: string
       value: |
         #!/bin/bash
+        setenforce 0
+        sed -i 's/^SELINUX=.*/SELINUX=permissive/' /etc/selinux/config
+        # FIXME hack repos with tripleo-repos tool to side step tripleo-ci
+        rpm -q yum-plugin-priorities || yum -y install yum-plugin-priorities
+        rpm -q deltarpm || yum -y install deltarpm
         rpm -q git || yum -y install git
-        git clone https://git.openstack.org/openstack-infra/tripleo-ci
-        export HOME=/root
-        tripleo-ci/scripts/tripleo.sh --repo-setup
+        easy_install pip
+        pip install git+https://github.com/openstack/tripleo-repos@master
+        tripleo-repos -b master current
+        # teardown to not fail extras's repo-setup role/python-requests install
+        pip uninstall -y tripleo-repos
+        rm -rf /usr/lib/python2.7/site-packages/requests/
         yum -y install python-heat-agent*
         systemctl daemon-reload
         systemctl enable os-collect-config
         systemctl start os-collect-config
-        sudo setenforce 0
 
   undercloud:
     depends_on: [public_network]
