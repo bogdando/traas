@@ -19,10 +19,15 @@ parameters:
     default: default
     description: Nova keypair to inject into the undercloud and bmc
 
-  overcloud_node_count:
+  controller_node_count:
     type: number
     default: 1
-    description: Number of overcloud nodes to deploy
+    description: Number of overcloud controller nodes to deploy
+
+  compute_node_count:
+    type: number
+    default: 1
+    description: Number of overcloud compute nodes to deploy
 
   private_net:
     type: string
@@ -50,10 +55,10 @@ parameters:
 
 resources:
 
-  overcloud_nodes:
+  controller_overcloud_nodes:
     type: OS::Heat::ResourceGroup
     properties:
-      count: {get_param: overcloud_node_count}
+      count: {get_param: controller_node_count}
       resource_def:
         type: OS::TraaS::OvercloudNode
         properties:
@@ -63,11 +68,33 @@ resources:
           private_net: {get_param: private_net}
           overcloud_user_data: {get_param: overcloud_user_data}
           overcloud_user_data_format: {get_param: overcloud_user_data_format}
+          #tags: controller
           overcloud_name:
             list_join:
               - '-'
               - - {get_param: overcloud_name}
+                - controller
                 - '%index%'
 
+  compute_overcloud_nodes:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: {get_param: compute_node_count}
+      resource_def:
+        type: OS::TraaS::OvercloudNode
+        properties:
+          overcloud_flavor: {get_param: overcloud_flavor}
+          overcloud_image: {get_param: overcloud_image}
+          key_name: {get_param: key_name}
+          private_net: {get_param: private_net}
+          overcloud_user_data: {get_param: overcloud_user_data}
+          overcloud_user_data_format: {get_param: overcloud_user_data_format}
+          #tags: compute
+          overcloud_name:
+            list_join:
+              - '-'
+              - - {get_param: overcloud_name}
+                - compute
+                - '%index%'
 
 outputs:

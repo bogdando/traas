@@ -3,7 +3,8 @@ parameters:
   overcloud_image: CentOS-7-x86_64-GenericCloud-1703
   key_name: bdobreli-rdo-cloud
   private_net: private
-  overcloud_node_count: 2
+  controller_node_count: 1
+  compute_node_count: 1
   public_net:  38.145.32.0/22
   undercloud_image: CentOS-7-x86_64-GenericCloud-1703
   undercloud_flavor: m1.large
@@ -16,6 +17,7 @@ parameters:
     yum -y install python-heat-agent*
     systemctl daemon-reload
     systemctl enable os-collect-config
+    systemctl start os-collect-config
     sudo setenforce 0
   overcloud_user_data: |
     #!/bin/bash
@@ -26,4 +28,5 @@ parameters:
     yum -y install python-heat-agent*
     systemctl daemon-reload
     systemctl enable os-collect-config
+    systemctl start os-collect-config
     sudo setenforce 0

@@ -18,10 +18,15 @@ parameters:
     default: default
     description: Nova keypair to inject into the undercloud and overcloud instances
 
-  overcloud_node_count:
+  controller_node_count:
     type: number
-    default: 2
-    description: Number of overcloud instances to deploy
+    default: 1
+    description: Number of controller overcloud instances to deploy
+
+  compute_node_count:
+    type: number
+    default: 1
+    description: Number of compute overcloud instances to deploy
 
   private_net:
     type: string
@@ -112,7 +117,8 @@ resources:
       key_name: {get_param: key_name}
       overcloud_user_data: {get_param: overcloud_user_data}
       overcloud_user_data_format: {get_param: overcloud_user_data_format}
-      overcloud_node_count: {get_param: overcloud_node_count}
+      controller_node_count: {get_param: controller_node_count}
+      compute_node_count: {get_param: compute_node_count}
       private_net: {get_attr: [private_network, private_net]}
       overcloud_name:
         list_join:
@@ -126,13 +132,24 @@ resources:
     properties:
       undercloud: {get_attr: [undercloud, undercloud_server]}
       undercloud_private_ip: {get_attr: [undercloud, undercloud_private_ip]}
-      overcloud_nodes: {get_attr: [overcloud_nodes, resource.overcloud_nodes, attributes, overcloud_node]}
-      overcloud_private_ips: {get_attr: [overcloud_nodes, resource.overcloud_nodes, overcloud_private_ip]}
+      overcloud_nodes:
+        map_merge:
+          - get_attr: [overcloud_nodes, resource.controller_overcloud_nodes, attributes, overcloud_node]
+          - get_attr: [overcloud_nodes, resource.compute_overcloud_nodes, attributes, overcloud_node]
+      controller_private_ips: {get_attr: [overcloud_nodes, resource.controller_overcloud_nodes, overcloud_private_ip]}
+      compute_private_ips: {get_attr: [overcloud_nodes, resource.compute_overcloud_nodes, overcloud_private_ip]}
+
 
 outputs:
-  ControllerIPs:
+  controller_private_ips:
     description: multinode CONTROLLER_IPS param for oooq
-    value: { get_attr: [oooq_job, overcloud_private_ips, 0] }
-  ComputeIPs:
+    value:
+      list_join:
+        - ' '
+        - {get_attr: [overcloud_nodes, resource.controller_overcloud_nodes, overcloud_private_ip]}
+  compute_private_ips:
     description: multinode COMPUTE_IPS param for oooq
-    value: { get_attr: [oooq_job, overcloud_private_ips, 1] }
+    value:
+      list_join:
+        - ' '
+        - {get_attr: [overcloud_nodes, resource.compute_overcloud_nodes, overcloud_private_ip]}

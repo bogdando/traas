@@ -14,9 +14,13 @@ parameters:
     type: json
     description: Overcloud server resources
 
-  overcloud_private_ips:
+  controller_private_ips:
     type: comma_delimited_list
-    description: Overcloud node private ip addresses
+    description: Controller Overcloud node private ip addresses
+
+  compute_private_ips:
+    type: comma_delimited_list
+    description: Compute Overcloud node private ip addresses
 
 resources:
 
@@ -63,7 +67,8 @@ resources:
         SUB_NODE_IPS:
           list_join:
             - ' '
-            - {get_param: overcloud_private_ips}
+            - {get_param: controller_private_ips}
+            - {get_param: compute_private_ips}
 
   DisconnectFromHostHeat:
     type: OS::Heat::Value
@@ -159,7 +164,8 @@ resources:
         SUB_NODE_IPS:
           list_join:
             - ' '
-            - {get_param: overcloud_private_ips}
+            - {get_param: controller_private_ips}
+            - {get_param: compute_private_ips}
       signal_transport: NO_SIGNAL
 
 outputs:
