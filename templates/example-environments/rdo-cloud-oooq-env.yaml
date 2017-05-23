@@ -4,7 +4,7 @@ parameters:
   key_name: bdobreli-rdo-cloud
   private_net: private
   controller_node_count: 1
-  compute_node_count: 1
+  compute_node_count: 0
   public_net:  38.145.32.0/22
   undercloud_image: CentOS-7-x86_64-GenericCloud-1703
   undercloud_flavor: m1.large
