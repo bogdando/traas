@@ -87,7 +87,8 @@ resources:
         yum -y install python-heat-agent*
         systemctl daemon-reload
         systemctl enable os-collect-config
-        systemctl start os-collect-config
+        sync
+        reboot
 
   undercloud:
     depends_on: [public_network]
