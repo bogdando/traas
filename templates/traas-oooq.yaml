@@ -129,10 +129,8 @@ resources:
     properties:
       undercloud: {get_attr: [undercloud, undercloud_server]}
       undercloud_private_ip: {get_attr: [undercloud, undercloud_private_ip]}
-      overcloud_nodes:
-        map_merge:
-          - get_attr: [overcloud_nodes, resource.controller_overcloud_nodes, attributes, overcloud_node]
-          - get_attr: [overcloud_nodes, resource.compute_overcloud_nodes, attributes, overcloud_node]
+      controller_overcloud_nodes: {get_attr: [overcloud_nodes, resource.controller_overcloud_nodes, attributes, overcloud_node]}
+      compute_overcloud_nodes: {get_attr: [overcloud_nodes, resource.compute_overcloud_nodes, attributes, overcloud_node]}
       controller_private_ips: {get_attr: [overcloud_nodes, resource.controller_overcloud_nodes, overcloud_private_ip]}
       compute_private_ips: {get_attr: [overcloud_nodes, resource.compute_overcloud_nodes, overcloud_private_ip]}
 

@@ -10,9 +10,13 @@ parameters:
     type: string
     description: undercloud private ip address
 
-  overcloud_nodes:
+  controller_overcloud_nodes:
     type: json
-    description: Overcloud server resources
+    description: Overcloud server controller resources
+
+  compute_overcloud_nodes:
+    type: json
+    description: Overcloud server compute resources
 
   controller_private_ips:
     type: comma_delimited_list
@@ -110,7 +114,10 @@ resources:
     depends_on: [OooqJobUndercloudDeployment]
     properties:
       config: {get_resource: OooqJobOvercloudConfig}
-      servers: {get_param: overcloud_nodes}
+      servers:
+        map_merge:
+          - {get_param: controller_overcloud_nodes}
+          - {get_param: compute_overcloud_nodes}
       signal_transport: HEAT_SIGNAL
       input_values:
         public_key: {get_attr: [OooqJobUndercloudDeployment, public_key]}
@@ -120,7 +127,8 @@ resources:
     depends_on: [OooqJobOvercloudDeployment]
     properties:
       undercloud: {get_param: undercloud}
-      overcloud_nodes: {get_param: overcloud_nodes}
+      controller_overcloud_nodes: {get_param: controller_overcloud_nodes}
+      compute_overcloud_nodes: {get_param: compute_overcloud_nodes}
 
   OooqJobConfig:
     type: OS::Heat::SoftwareConfig
