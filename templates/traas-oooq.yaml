@@ -80,6 +80,7 @@ resources:
         #!/bin/bash
         setenforce 0
         sed -i 's/^SELINUX=.*/SELINUX=permissive/' /etc/selinux/config
+        rpm -q ntpdate || yum -y install ntpdate
         rpm -q git || yum -y install git
         git clone https://git.openstack.org/openstack-infra/tripleo-ci
         export HOME=/root
