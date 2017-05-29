@@ -84,14 +84,24 @@ resources:
         #!/bin/bash
         setenforce 0
         sed -i 's/^SELINUX=.*/SELINUX=permissive/' /etc/selinux/config
-        rpm -q ntpdate || yum -y install ntpdate
+        # FIXME hack repos with tripleo-repos tool to side step tripleo-ci
+        rpm -q yum-plugin-priorities || yum -y install yum-plugin-priorities
+        rpm -q deltarpm || yum -y install deltarpm
         rpm -q git || yum -y install git
-        git clone https://git.openstack.org/openstack-infra/tripleo-ci
-        export HOME=/root
-        tripleo-ci/scripts/tripleo.sh --repo-setup
+        easy_install pip
+        pip install git+https://github.com/openstack/tripleo-repos@master
+        tripleo-repos -b master current
+        pip uninstall -y tripleo-repos
+        # from tripleo-ci magic
+        rm -rf /usr/lib/python2.7/site-packages/requests/ /usr/lib/python2.7/site-packages/urllib3
+        rpm -e --nodeps python-requests python-urllib3 || :
+        rpm -e --nodeps python2-requests python2-urllib3 || :
+        yum -y install python-requests python-urllib3
         yum -y install python-heat-agent*
         systemctl daemon-reload
         systemctl enable os-collect-config
+        # paunch is not packaged yet
+        pip install paunch>=1.0.0
         sync
         reboot
 
