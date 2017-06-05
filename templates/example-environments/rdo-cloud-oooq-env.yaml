@@ -1,5 +1,5 @@
 parameters:
-  overcloud_flavor: m1.small
+  overcloud_flavor: m1.medium
   overcloud_image: CentOS-7-x86_64-GenericCloud-1703
   key_name: bdobreli-rdo-cloud
   private_net: private
@@ -8,4 +8,4 @@ parameters:
   public_net:  38.145.32.0/22
   undercloud_image: CentOS-7-x86_64-GenericCloud-1703
   undercloud_flavor: m1.large
-  volume_id: f645e714-f821-4795-8a39-f4f044ac3161
+  #volume_id: f645e714-f821-4795-8a39-f4f044ac3161

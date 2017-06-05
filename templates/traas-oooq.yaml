@@ -1,4 +1,4 @@
-heat_template_version: 2015-04-30
+heat_template_version: newton
 
 parameters:
 
@@ -61,11 +61,28 @@ parameters:
 
   volume_id:
     description: An external volume ID for docker images
-    default: null
+    default: ''
     type: string
 
 
 resources:
+
+  sg:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: sg
+      description: Ping and SSH and DNS
+      rules:
+      - protocol: icmp
+      - protocol: tcp
+        port_range_min: 22
+        port_range_max: 22
+      - protocol: udp
+        port_range_min: 53
+        port_range_max: 53
+      - protocol: tcp
+        port_range_min: 53
+        port_range_max: 53
 
   public_network:
     type: OS::TraaS::PublicNetwork
@@ -90,37 +107,36 @@ resources:
         rpm -q yum-plugin-priorities || yum -y install yum-plugin-priorities
         rpm -q deltarpm || yum -y install deltarpm
         rpm -q git || yum -y install git
-        easy_install pip
+        # use yet packaged tripleo-repos to setup dlrn, one time op and teardown
+        rpm -q python-pip || yum -y install python-pip || easy_install pip
         pip install git+https://github.com/openstack/tripleo-repos@master
         tripleo-repos -b master current
-        pip uninstall -y tripleo-repos
-        # a few restoration spells from tripleo-ci scripts
-        rm -rf /usr/lib/python2.7/site-packages/requests/ /usr/lib/python2.7/site-packages/urllib3
-        rpm -e --nodeps python-requests python-urllib3 || :
-        rpm -e --nodeps python2-requests python2-urllib3 || :
-        yum -y install python-requests python-urllib3
+        pip uninstall -y tripleo-repos requests urllib3
+        yum -y reinstall python-requests python-urllib3
         # configure os-collect-config to enable heat to do its things
         yum -y install python-heat-agent*
         systemctl daemon-reload
         systemctl enable os-collect-config
-        # paunch is not packaged yet
-        pip install paunch>=1.0.0
+        # Install docker
+        rpm -q docker || yum -y install docker
+        rpm -q docker-client || yum -y install docker-client
         # Overlay2 for docker
         cat > /etc/sysconfig/docker-storage <<-EOF_CAT
         DOCKER_STORAGE_OPTIONS=-s overlay2
         EOF_CAT
         systemctl enable docker
+        systemctl start docker
+        # Start a local registry
+        docker run --restart=always -dit -p 8787:5000 \
+        -v /var/lib/docker-registry:/var/lib/registry \
+        --name registry docker.io/library/registry
         # Load docker images from the mounted volume_id -> /dev/vdb
         [ -e /dev/vdb ] || (sync; reboot)
-        systemctl start docker
         echo "/dev/vdb /mnt/docker_images ext4 defaults 0 0" >> /etc/fstab
         mkdir -p /mnt/docker_images
         mount -a
         [ -f /mnt/docker_images/tripleoupstream.tar ] && \
         docker load -i /mnt/docker_images/tripleoupstream.tar
-        # Start a local registry
-        docker pull registry
-        docker run --restart=always -dit -p 8787:5000 --name registry registry
         sync
         reboot
 
@@ -132,6 +148,7 @@ resources:
       undercloud_image: {get_param: undercloud_image}
       key_name: {get_param: key_name}
       volume_id: {get_param: volume_id}
+      sg: {get_resource: sg}
       undercloud_name:
         list_join:
           - '-'
@@ -152,6 +169,7 @@ resources:
       compute_node_count: {get_param: compute_node_count}
       private_net: {get_attr: [private_network, private_net]}
       overcloud_user_data: {get_attr: [user_data_script, value]}
+      sg: {get_resource: sg}
       overcloud_name:
         list_join:
           - '-'

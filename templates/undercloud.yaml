@@ -1,4 +1,4 @@
-heat_template_version: 2015-04-30
+heat_template_version: newton
 
 parameters:
   undercloud_flavor:
@@ -17,18 +17,16 @@ parameters:
     type: string
   volume_id:
     type: string
+    default: ''
+  sg:
+    type: string
+    description: Neutron sec group
+
+conditions:
+
+  use_ext_volume: {not: {equals: [{get_param: volume_id}, '']}}
 
 resources:
-  undercloud_sg:
-    type: OS::Neutron::SecurityGroup
-    properties:
-      name: undercloud_sg
-      description: Ping and SSH
-      rules:
-      - protocol: icmp
-      - protocol: tcp
-        port_range_min: 22
-        port_range_max: 22
 
   undercloud_server:
     type: OS::Nova::Server
@@ -40,7 +38,7 @@ resources:
       - network: {get_param: private_net}
       security_groups:
         - "default"
-        - {get_resource: undercloud_sg}
+        - {get_param: sg}
       name: {get_param: undercloud_name}
       user_data_format: SOFTWARE_CONFIG
       user_data: {get_param: undercloud_user_data}
@@ -51,6 +49,7 @@ resources:
     properties:
       instance_uuid: {get_resource: undercloud_server}
       volume_id: {get_param: volume_id}
+    condition: use_ext_volume
 
   undercloud_floating_ip:
     type: OS::TraaS::UndercloudFloating

@@ -39,9 +39,10 @@ resources:
         rm -rf /etc/profile.d/traas-oooq.sh
         echo export PRIMARY_NODE_IP=\"$PRIMARY_NODE_IP\" >> /etc/profile.d/traas-oooq.sh
         echo export SUB_NODE_IPS=\"$SUB_NODE_IPS\" >> /etc/profile.d/traas-oooq.sh
+        # oooq hardcodes the path
         mkdir -p /etc/nodepool
         if [ ! -f /etc/nodepool/id_rsa ]; then
-          ssh-keygen -t rsa -f /etc/nodepool/id_rsa
+          ssh-keygen -t rsa -f /etc/nodepool/id_rsa -q -N ""
         fi
         cp /etc/nodepool/id_rsa* /home/centos/.ssh
         cat /etc/nodepool/id_rsa.pub >> /home/centos/.ssh/authorized_keys
