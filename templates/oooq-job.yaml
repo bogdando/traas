@@ -91,6 +91,34 @@ resources:
         rm -f /etc/os-collect-config.conf
         os-apply-config -m /var/lib/os-collect-config/local-data/00-os-collect-config
 
+  DisconnectCloudInitHosts:
+    type: OS::Heat::Value
+    properties:
+      type: string
+      value: |
+        # Disconnect host names and /etc/hosts updates done by cloud-init
+        sed -i -r 's,^(.*_host),#\1,' /etc/cloud/cloud.cfg
+        # Hardcode expected hosts entries
+        hostname | sudo dd of=/etc/hostname
+        echo "127.0.0.1 $(hostname) $(hostname).openstacklocal" >> /etc/hosts
+
+  SetupDockerRegistry:
+    type: OS::Heat::Value
+    properties:
+      type: string
+      value: |
+        # Configure local docker registry and import saved images, if any
+        docker run --restart=always -dit -p 8787:5000 \
+        -v /var/lib/docker-registry:/var/lib/registry \
+        --name registry docker.io/library/registry
+        # Load docker images from the mounted volume_id -> /dev/vdb
+        [ -e /dev/vdb ] || (sync; reboot)
+        echo "/dev/vdb /mnt/docker_images ext4 defaults 0 0" >> /etc/fstab
+        mkdir -p /mnt/docker_images
+        mount -a
+        [ -f /mnt/docker_images/tripleoupstream.tar ] && \
+        docker load -i /mnt/docker_images/tripleoupstream.tar
+
   OooqJobOvercloudConfig:
     type: OS::Heat::SoftwareConfig
     properties:
@@ -100,11 +128,14 @@ resources:
           template: |
             #!/bin/bash
             set -eux
+            systemctl start docker
             echo $public_key >> /home/centos/.ssh/authorized_keys
 
             $disconnect_snippet
+            $disconnect2_snippet
           params:
             $disconnect_snippet: {get_attr: [DisconnectFromHostHeat, value]}
+            $disconnect_snippet2: {get_attr: [DisconnectCloudInitHosts, value]}
       inputs:
         - name: public_key
           type: String
@@ -140,8 +171,11 @@ resources:
           template: |
             #!/bin/bash
             set -eux
+            systemctl start docker
 
             $disconnect_snippet
+            $disconnect2_snippet
+            $setup_snippet
 
             rpm -q git || yum -y install git
             su -l centos -c "git clone -b dev https://github.com/bogdando/traas"
@@ -153,6 +187,8 @@ resources:
             exit 0
           params:
             $disconnect_snippet: {get_attr: [DisconnectFromHostHeat, value]}
+            $disconnect_snippet2: {get_attr: [DisconnectCloudInitHosts, value]}
+            $setup_snippet: {get_attr: [SetupDockerRegistry, value]}
       inputs:
         - name: PRIMARY_NODE_IP
           type: String
