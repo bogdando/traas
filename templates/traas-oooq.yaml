@@ -95,14 +95,14 @@ resources:
       public_net: {get_param: public_net}
 
   private_network_admin:
-    type: OS::TraaS::PrivateNetwork
+    type: OS::TraaS::PrivateNetworkAdmin
     properties:
-      private_net: {get_param: private_net_admin}
+      private_net_admin: {get_param: private_net_admin}
 
   private_network_cluster:
-    type: OS::TraaS::PrivateNetwork
+    type: OS::TraaS::PrivateNetworkCluster
     properties:
-      private_net: {get_param: private_net_cluster}
+      private_net_cluster: {get_param: private_net_cluster}
 
   user_data_script:
     type: OS::Heat::Value
@@ -159,7 +159,7 @@ resources:
 
   overcloud_nodes:
     type: OS::TraaS::OvercloudNodes
-    depends_on: [private_network]
+    depends_on: [private_network_admin, private_network_cluster]
     properties:
       overcloud_flavor: {get_param: overcloud_flavor}
       overcloud_image: {get_param: overcloud_image}
