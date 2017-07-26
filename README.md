@@ -50,12 +50,21 @@ Provisioning requirements
 >
 > Do not choose an admin network subnet that would overlap with a subnet you plan
 > to use for developing TripleO. The default subnet for TripleO is 192.168.24.0/24.
-> So choose a subnet that does not overlap with this CIDR. For the
-> `templates/example-environments/rdo-cloud-oooq-env.yaml` example: 192.168.0.0/24.
+> So choose a subnet that does not overlap with this CIDR. Defaults to 192.168.0.0/24.
 
 * Create a keypair in nova
 * Clone this repo's **dev** branch and customize the
  `example-environments/rdo-cloud-env.yaml` file as you want it.
+
+> **note**
+>
+> After VMs provisioned, make sure to disable Neutron ports
+> security for the ports connected to the cluster network:
+>
+>    $ neutron port-update --no-security-groups <id>
+>    $ neutron port-update <id> --port-security-enabled=False
+
+At this point, you are ready to go with your deployment.
 
 Tripleo-Quickstart based deployments
 ====================================
