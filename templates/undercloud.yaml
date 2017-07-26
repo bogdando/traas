@@ -11,7 +11,7 @@ parameters:
     type: string
   undercloud_user_data:
     type: string
-  private_net:
+  private_net_admin:
     type: string
   public_net:
     type: string
@@ -35,7 +35,7 @@ resources:
       image: {get_param: undercloud_image}
       key_name: {get_param: key_name}
       networks:
-      - network: {get_param: private_net}
+      - network: {get_param: private_net_admin}
       security_groups:
         - "default"
         - {get_param: sg}
@@ -59,7 +59,7 @@ resources:
         get_attr:
           - undercloud_server
           - addresses
-          - {get_param: private_net}
+          - {get_param: private_net_admin}
           - 0
           - port
 
@@ -72,10 +72,10 @@ outputs:
     value:
       get_attr: [undercloud_floating_ip, undercloud_floating_ip]
   undercloud_private_ip:
-    description: "private ip of the undercloud instance"
+    description: "private admin ip of the undercloud instance"
     value:
       get_attr:
         - undercloud_server
         - networks
-        - {get_param: private_net}
+        - {get_param: private_net_admin}
         - 0

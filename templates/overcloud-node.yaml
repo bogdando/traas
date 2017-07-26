@@ -14,7 +14,10 @@ parameters:
   overcloud_name:
     type: string
 
-  private_net:
+  private_net_admin:
+    type: string
+
+  private_net_cluster:
     type: string
 
   overcloud_user_data:
@@ -38,7 +41,8 @@ resources:
       key_name: {get_param: key_name}
       user_data_format: SOFTWARE_CONFIG
       networks:
-        - {network: {get_param: private_net}}
+        - {network: {get_param: private_net_admin}}
+        - {network: {get_param: private_net_cluster}}
       security_groups:
         - "default"
         - {get_param: sg}
@@ -53,10 +57,10 @@ outputs:
     description: "overcloud node resource"
     value: {get_resource: overcloud_node}
   overcloud_private_ip:
-    description: "private ip of the overcloud instance"
+    description: "private admin ip of the overcloud instance"
     value:
       get_attr:
         - overcloud_node
         - networks
-        - {get_param: private_net}
+        - {get_param: private_net_admin}
         - 0

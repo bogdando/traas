@@ -1,0 +1,23 @@
+heat_template_version: 2015-04-30
+
+# Template which provides a private networks for admin/control, which is
+# routed to an external network, and cluster network for building SDN on top.
+# This template just passes through the name of an already created
+# private networks.
+
+parameters:
+
+  private_net_admin:
+    type: string
+    description: Name of private network for admin/control access
+
+  private_net_cluster:
+    type: string
+    description: Name of private network for cluster management et al
+
+outputs:
+  private_net_admin:
+    value: {get_param: private_net_admin}
+
+  private_net_cluster:
+    value: {get_param: private_net_cluster}

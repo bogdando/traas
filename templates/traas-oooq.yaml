@@ -28,10 +28,15 @@ parameters:
     default: 1
     description: Number of compute overcloud instances to deploy
 
-  private_net:
+  private_net_admin:
     type: string
     default: private
-    description: Name of a private network which will be associated with all instances
+    description: Name of an admin private network which will be associated with all instances
+
+  private_net_cluster:
+    type: string
+    default: private
+    description: Name of a cluster private network which will be associated with overcloud instances
 
   public_net:
     type: string
@@ -89,10 +94,15 @@ resources:
     properties:
       public_net: {get_param: public_net}
 
-  private_network:
+  private_network_admin:
     type: OS::TraaS::PrivateNetwork
     properties:
-      private_net: {get_param: private_net}
+      private_net: {get_param: private_net_admin}
+
+  private_network_cluster:
+    type: OS::TraaS::PrivateNetwork
+    properties:
+      private_net: {get_param: private_net_cluster}
 
   user_data_script:
     type: OS::Heat::Value
@@ -144,7 +154,7 @@ resources:
           - - {get_param: 'OS::stack_name'}
             - {get_param: undercloud_name}
       undercloud_user_data: {get_attr: [user_data_script, value]}
-      private_net: {get_attr: [private_network, private_net]}
+      private_net_admin: {get_attr: [private_network_admin, private_net_admin]}
       public_net: {get_attr: [public_network, public_net]}
 
   overcloud_nodes:
@@ -156,7 +166,8 @@ resources:
       key_name: {get_param: key_name}
       controller_node_count: {get_param: controller_node_count}
       compute_node_count: {get_param: compute_node_count}
-      private_net: {get_attr: [private_network, private_net]}
+      private_net_admin: {get_attr: [private_network_admin, private_net_admin]}
+      private_net_cluster: {get_attr: [private_network_cluster, private_net_cluster]}
       overcloud_user_data: {get_attr: [user_data_script, value]}
       sg: {get_resource: sg}
       overcloud_name:
