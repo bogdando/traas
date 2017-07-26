@@ -1,69 +1,50 @@
-Tripleo-ci deployment mode
-==========================
+Traas (fork)
+============
 
-traas is a set of Heat templates and wrapper scripts arond toci_gate_test.sh.
-You can think of traas as taking on the role that is done by nodepool and
-devstack-gate in CI, but using Heat instead. traas could just be used when you
-have access to an OpenStack cloud with Heat that you want to use for TripleO
-development.
+This is a fork from James Slagle's [Traas](https://github.com/slagle/traas),
+reworked to support only
+[TripleO-Quickstart (oooq)](https://github.com/openstack/tripleo-quickstart)
+OpenStack deployments, opposed to the original Traas, which uses the
+[tripleo-ci](https://github.com/openstack-infra/tripleo-ci) scripts to mimic
+openstack-infra CI jobs. See also,
+[OVB devmode](https://docs.openstack.org/tripleo-quickstart/latest/devmode-ovb.html).
 
-The Heat templates are used to bring up a multinode environment, and then
-trigger some SoftwareDeployment resources on the undercloud node to
-execute a tripleo-ci job.
+The repository (hereafter just a 'fork') contains a set of Heat templates and
+wrapper scripts around quickstart and oooq-warp scripts and inventory vars.
 
-Use it as::
+Just like original Traas, the fork could just be used when you have access to
+an OpenStack cloud with Heat that you want to use for TripleO development with
+quickstart playbooks/roles, and dithcing the tripleo-ci and even the
+`quickstart.sh`/`oooq-warp.sh`, if you prefer casting `ansible-playbook` spells
+directly upon your inventory. The placeholder script, what is invoked by
+the Heat SoftwareDeployment, is located under the `scripts/traas-oooq.sh` path.
 
-  $ mkvirtualenv ocata
-  $ wget https://raw.githubusercontent.com/openstack/requirements/stable/ocata/upper-constraints.txt -O /tmp/ocata
-  $ pip install -c /tmp/ocata python-openstackclient python-heatclient
-  $ git clone -b dev https://github.com/bogdando/traas.git
-  $ openstack --os-cloud rdo-cloud stack create foo \
-  -t traas/templates/traas.yaml \
-  -e traas/templates/traas-resource-registry.yaml \
-  -e traas/templates/example-environments/rdo-cloud-env.yaml \
-  --wait
+Note, provisioning of networks and routers, and basically calling the very
+deployment steps, like running your ansible-playbooks for OpenStack, have yet
+to be automated and remain manual steps. You may want to use the placeholder
+script `scripts/traas-oooq.sh` to host them there.
 
-This launches the toci CI job from tripleo-ci defined jobs.
-The main template is::
+The Heat templates are used to bring up an environment on top of existing
+Neutron networks and routers of the host OpenStack cloud, like RDO cloud. It
+connects the pre-created admin/public networks to an undercloud VM and
+admin/cluster networks to overcloud VMs. And then triggers some
+SoftwareDeployment resources on the undercloud node to execute a deployment job
 
-	 templates/traas.yaml
+See also
+[deployed-server](https://docs.openstack.org/tripleo-docs/latest/install/advanced_deployment/deployed_server.html).
 
-You can see the resources there for an undercloud node and set of overcloud
-nodes, etc. The templates requires some parameters. Included, there are some
-sample environment files that can be used to set the required parameters at::
+Tripleo-Quickstart based deployments
+====================================
 
-  templates/example-environments
-
-Once the nodes are up, the main script that is triggered is::
-
-	scripts/traas.sh
-
-The script logs to `tripleo-root/traas.log` in the home directory of the
-`centos` user. This logfile is equivalent to the upstream `console.html` output
-from a ci job.
-
-That is a simple wrapper around toci_gate_test.sh. The $TOCI_JOBTYPE variable
-(passed in via a Heat parameter) is what drives which job is executed. Since it
-just executes toci_gate_test.sh, what tool tripleo-ci uses for that jobtype is
-what tool gets used to execute the job (tripleo-quickstart, tripleo.sh, etc).
-
-By default, it will be set to `multinode-1ctlr-featureset004` which is the
-default nonha multinode job used upstream in tripleo-ci.
-
-It executes the ci job end to end and then leaves the environment up at the end
-for inspection and/or development.
-
-Quickstart-extras based deployments (WIP)
-=========================================
-
-If you want a custom provisioning job, for example to be consumed by the
-quickstart-extras ansible roles use these templates::
+This is a WIP.
+Use it like this::
 
   $ openstack --os-cloud rdo-cloud stack create foo \
   -t templates/traas-oooq.yaml \
   -e templates/traas-oooq-resource-registry.yaml \
   -e templates/example-environments/rdo-cloud-oooq-env.yaml \
   --wait
+  $ # trigger your deployment manually or automatically with the placeholder
 
 The main template is::
 
@@ -73,7 +54,14 @@ The example environment is::
 
   templates/example-environments/rdo-cloud-oooq-env.yaml
 
-You may as well pre-create a volume and save docker images for future use.
+Once the nodes are up, the main script that is triggered is::
+
+	scripts/traas-oooq.sh
+
+The script logs to `tripleo-root/traas-oooq.log` in the home directory of the
+`centos` user.
+
+You may want to pre-create a volume and save docker images for future use.
 Define the ``volume_id`` to ensure the pre-created volume is mounted for
 an undercloud node. Then, from that undercloud node containing docker images
 (see the `overcloud-prep-containers` quickstart-extras role for details),
