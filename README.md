@@ -6,8 +6,10 @@ reworked to support only
 [TripleO-Quickstart (oooq)](https://github.com/openstack/tripleo-quickstart)
 OpenStack deployments, opposed to the original Traas, which uses the
 [tripleo-ci](https://github.com/openstack-infra/tripleo-ci) scripts to mimic
-openstack-infra CI jobs. See also,
-[OVB devmode](https://docs.openstack.org/tripleo-quickstart/latest/devmode-ovb.html).
+openstack-infra CI jobs. See also:
+
+* [OVB devmode](https://docs.openstack.org/tripleo-quickstart/latest/devmode-ovb.html)
+* The original [Traas announce](http://lists.openstack.org/pipermail/openstack-dev/2017-February/112993.html)
 
 The repository (hereafter just a 'fork') contains a set of Heat templates and
 wrapper scripts around quickstart and oooq-warp scripts and inventory vars.
@@ -34,6 +36,26 @@ SoftwareDeployment resources on the undercloud node to execute a deployment job
 
 See also
 [deployed-server](https://docs.openstack.org/tripleo-docs/latest/install/advanced_deployment/deployed_server.html).
+
+Provisioning requirements
+=========================
+
+* A non admin tenant on the host OpenStack cloud, say RDO cloud.
+* Create an admin, cluster, public networks and routers, e.g. per this
+  [RDO cloud doc](https://docs.google.com/document/d/1bFEayAH7Mqi7zn7fpdMS3Zc-plOOnqoGqh7cDNjLxB8/edit#heading=h.2wr6dc75ub5y).
+  Name it to match the example `templates/example-environments/rdo-cloud-oooq-env.yaml`
+  file and/or modify the latter as needed, see the steps below.
+
+> **note**
+>
+> Do not choose an admin network subnet that would overlap with a subnet you plan
+> to use for developing TripleO. The default subnet for TripleO is 192.168.24.0/24.
+> So choose a subnet that does not overlap with this CIDR. For the
+> `templates/example-environments/rdo-cloud-oooq-env.yaml` example: 192.168.0.0/24.
+
+* Create a keypair in nova
+* Clone this repo's **dev** branch and customize the
+ `example-environments/rdo-cloud-env.yaml` file as you want it.
 
 Tripleo-Quickstart based deployments
 ====================================
