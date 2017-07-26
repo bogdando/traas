@@ -44,7 +44,9 @@ Provisioning requirements
 * Create an admin, cluster, public networks and routers, e.g. per this
   [RDO cloud doc](https://docs.google.com/document/d/1bFEayAH7Mqi7zn7fpdMS3Zc-plOOnqoGqh7cDNjLxB8/edit#heading=h.2wr6dc75ub5y).
   Name it to match the example `templates/example-environments/rdo-cloud-oooq-env.yaml`
-  file and/or modify the latter as needed, see the steps below.
+  file and/or modify the latter as needed, see the steps below. Note that the
+  cluster network may be isolated and does not require a DHCP or router connections
+  created.
 
 > **note**
 >
