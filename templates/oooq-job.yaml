@@ -135,7 +135,7 @@ resources:
             $disconnect2_snippet
           params:
             $disconnect_snippet: {get_attr: [DisconnectFromHostHeat, value]}
-            $disconnect_snippet2: {get_attr: [DisconnectCloudInitHosts, value]}
+            $disconnect2_snippet: {get_attr: [DisconnectCloudInitHosts, value]}
       inputs:
         - name: public_key
           type: String
@@ -187,7 +187,7 @@ resources:
             exit 0
           params:
             $disconnect_snippet: {get_attr: [DisconnectFromHostHeat, value]}
-            $disconnect_snippet2: {get_attr: [DisconnectCloudInitHosts, value]}
+            $disconnect2_snippet: {get_attr: [DisconnectCloudInitHosts, value]}
             $setup_snippet: {get_attr: [SetupDockerRegistry, value]}
       inputs:
         - name: PRIMARY_NODE_IP
