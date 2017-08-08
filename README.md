@@ -95,25 +95,6 @@ Once the nodes are up, the main script that is triggered is:
 The script logs to `tripleo-root/traas-oooq.log` in the home directory of the
 `centos` user.
 
-You may want to pre-create a volume and save docker images for future use.
-Define the ``volume_id`` to ensure the pre-created volume is mounted for
-an undercloud node. Then, from that undercloud node containing docker images
-(see the `overcloud-prep-containers` quickstart-extras role for details),
-do a one time export steps, for example:
-
-    # mkfs.ext4 -F /dev/vdb
-    # echo "/dev/vdb /mnt/docker_images ext4 defaults 0 0" >> /etc/fstab
-    # mkdir -p /mnt/docker_images
-    # mount -a
-    # docker save $(docker images -f dangling=false | \
-    awk '/^docker\.io/ {print $1}' | sort -u) | gzip -6 \
-    > /mnt/docker_images/tripleoupstream.tar
-    # sync
-    # umount /mnt/docker_images
-
-From now on, consequent stacks will load the saved images from the given
-`volume_id` while running the undercloud cloud-init user script.
-
 > **note**
 >
 > Changing docker graph driver or remapping its userns will reset

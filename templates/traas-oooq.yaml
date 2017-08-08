@@ -64,11 +64,6 @@ parameters:
     default: CentOS-7-x86_64-GenericCloud-1503
     description: Image to boot as the undercloud instance
 
-  volume_id:
-    description: An external volume ID for docker images
-    default: ''
-    type: string
-
 
 resources:
 
@@ -146,7 +141,6 @@ resources:
       undercloud_flavor: {get_param: undercloud_flavor}
       undercloud_image: {get_param: undercloud_image}
       key_name: {get_param: key_name}
-      volume_id: {get_param: volume_id}
       sg: {get_resource: sg}
       undercloud_name:
         list_join:

@@ -107,17 +107,10 @@ resources:
     properties:
       type: string
       value: |
-        # Configure local docker registry and import saved images, if any
+        # Configure local docker registry
         docker run --restart=always -dit -p 8787:5000 \
         -v /var/lib/docker-registry:/var/lib/registry \
         --name registry docker.io/library/registry
-        # Load docker images from the mounted volume_id -> /dev/vdb
-        [ -e /dev/vdb ] || (sync; reboot)
-        echo "/dev/vdb /mnt/docker_images ext4 defaults 0 0" >> /etc/fstab
-        mkdir -p /mnt/docker_images
-        mount -a
-        [ -f /mnt/docker_images/tripleoupstream.tar ] && \
-        docker load -i /mnt/docker_images/tripleoupstream.tar
 
   OooqJobOvercloudConfig:
     type: OS::Heat::SoftwareConfig
