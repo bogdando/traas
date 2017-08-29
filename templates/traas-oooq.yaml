@@ -122,15 +122,6 @@ resources:
         yum -y install python-heat-agent*
         systemctl daemon-reload
         systemctl enable os-collect-config
-        # Install docker
-        rpm -q docker || yum -y install docker
-        rpm -q docker-client || yum -y install docker-client
-        # Overlay2 for docker, selinux disabled
-        cat > /etc/sysconfig/docker-storage <<-EOF_CAT
-        DOCKER_STORAGE_OPTIONS=-s overlay2
-        EOF_CAT
-        sed -i "s/^OPTIONS.*$/OPTIONS='--log-driver=journald --signature-verification=false'/g" /etc/sysconfig/docker
-        systemctl enable docker
         sync
         reboot
 

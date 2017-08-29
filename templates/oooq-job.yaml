@@ -49,6 +49,17 @@ resources:
         chown -R centos.centos /home/centos /etc/nodepool
         mkdir -p $heat_outputs_path
         cp /etc/nodepool/id_rsa.pub $heat_outputs_path.public_key
+        # Install docker
+        rpm -q docker || yum -y install docker
+        rpm -q docker-client || yum -y install docker-client
+        # Overlay2 for docker, selinux disabled
+        cat > /etc/sysconfig/docker-storage <<-EOF_CAT
+        DOCKER_STORAGE_OPTIONS='-s overlay2'
+        EOF_CAT
+        # Set docker options and UC insecure registry
+        sed -ri "s/(^#\s+)?(INSECURE_REGISTRY=).*$/\2'--insecure-registry PRIMARY_NODE_IP:8787'/" /etc/sysconfig/docker
+        sed -ri "s/(^#\s+)?(OPTIONS=).*$/\2'--log-driver=journald --signature-verification=false --iptables=false'/" /etc/sysconfig/docker
+        systemctl enable docker
       inputs:
         - name: PRIMARY_NODE_IP
           type: String
