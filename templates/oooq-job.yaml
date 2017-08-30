@@ -57,7 +57,7 @@ resources:
         DOCKER_STORAGE_OPTIONS='-s overlay2'
         EOF_CAT
         # Set docker options and UC insecure registry
-        sed -ri "s/(^#\s+)?(INSECURE_REGISTRY=).*$/\2'--insecure-registry PRIMARY_NODE_IP:8787'/" /etc/sysconfig/docker
+        sed -ri "s/(^#\s+)?(INSECURE_REGISTRY=).*$/\2\"--insecure-registry $PRIMARY_NODE_IP:8787\"/" /etc/sysconfig/docker
         sed -ri "s/(^#\s+)?(OPTIONS=).*$/\2'--log-driver=journald --signature-verification=false --iptables=false'/" /etc/sysconfig/docker
         systemctl enable docker
       inputs:
