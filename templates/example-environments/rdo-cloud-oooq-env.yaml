@@ -1,5 +1,5 @@
 parameters:
-  overcloud_flavor: m1.medium
+  overcloud_flavor: m1.large
   overcloud_image: CentOS-7-x86_64-GenericCloud-1703
   key_name: bdobreli-rdo-cloud
   private_net_admin: private
