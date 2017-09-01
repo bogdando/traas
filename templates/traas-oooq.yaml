@@ -64,28 +64,50 @@ parameters:
     default: CentOS-7-x86_64-GenericCloud-1503
     description: Image to boot as the undercloud instance
 
+  ssh_ingress_cidr:
+    type: string
+    default: 0.0.0.0/0
+    description: Allow SSH access from IP network
+
+  cluster_ingress_cidr:
+    type: string
+    default: 0.0.0.0/0
+    description: Allow TCP/UDP access from IP overcloud network
 
 resources:
 
-  sg:
+  sg_uc:
     type: OS::Neutron::SecurityGroup
     properties:
       name: sg
-      description: Ping and SSH and DNS and registry
+      description: Sec group for UC
       rules:
       - protocol: icmp
-      - protocol: tcp
+      - direction: ingress
+        protocol: tcp
         port_range_min: 22
         port_range_max: 22
-      - protocol: udp
-        port_range_min: 53
-        port_range_max: 53
-      - protocol: tcp
-        port_range_min: 53
-        port_range_max: 53
-      - protocol: tcp
-        port_range_min: 8787
-        port_range_max: 8787
+        remote_ip_prefix: { get_param: ssh_ingress_cidr }
+      - direction: ingress
+        protocol: udp
+        remote_ip_prefix: { get_param: cluster_ingress_cidr }
+      - direction: ingress
+        protocol: tcp
+        remote_ip_prefix: { get_param: cluster_ingress_cidr }
+
+    sg_oc:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: sg
+      description: Sec group for overcloud cluster
+      rules:
+      - protocol: icmp
+      - direction: ingress
+        protocol: udp
+        remote_ip_prefix: { get_param: cluster_ingress_cidr }
+      - direction: ingress
+        protocol: tcp
+        remote_ip_prefix: { get_param: cluster_ingress_cidr }
 
   public_network:
     type: OS::TraaS::PublicNetwork
@@ -135,7 +157,7 @@ resources:
       undercloud_flavor: {get_param: undercloud_flavor}
       undercloud_image: {get_param: undercloud_image}
       key_name: {get_param: key_name}
-      sg: {get_resource: sg}
+      sg: {get_resource: sg_uc}
       undercloud_name:
         list_join:
           - '-'
@@ -157,7 +179,7 @@ resources:
       private_net_admin: {get_attr: [private_network_admin, private_net_admin]}
       private_net_cluster: {get_attr: [private_network_cluster, private_net_cluster]}
       overcloud_user_data: {get_attr: [user_data_script, value]}
-      sg: {get_resource: sg}
+      sg: {get_resource: sg_oc}
       overcloud_name:
         list_join:
           - '-'

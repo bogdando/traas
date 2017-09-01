@@ -9,3 +9,5 @@ parameters:
   public_net:  38.145.32.0/22
   undercloud_image: CentOS-7-x86_64-GenericCloud-1703
   undercloud_flavor: m1.large
+  #ssh_ingress_cidr: <external IP/32 of control/admin node to access UC>
+  #cluster_ingress_cidr: <overcloud cluster network CIDR>
