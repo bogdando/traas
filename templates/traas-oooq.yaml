@@ -95,7 +95,7 @@ resources:
         protocol: tcp
         remote_ip_prefix: { get_param: cluster_ingress_cidr }
 
-    sg_oc:
+  sg_oc:
     type: OS::Neutron::SecurityGroup
     properties:
       name: sg
