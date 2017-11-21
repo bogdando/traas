@@ -147,6 +147,9 @@ resources:
         yum -y install python-heat-agent*
         systemctl daemon-reload
         systemctl enable os-collect-config
+        # unbound is required to have local resolver
+        yum install -y unbound
+        systemctl enable unbound
         sync
         reboot
 
