@@ -168,6 +168,7 @@ resources:
             - {get_param: undercloud_name}
       undercloud_user_data: {get_attr: [user_data_script, value]}
       private_net_admin: {get_attr: [private_network_admin, private_net_admin]}
+      private_net_cluster: {get_attr: [private_network_cluster, private_net_cluster]}
       public_net: {get_attr: [public_network, public_net]}
 
   overcloud_nodes:
