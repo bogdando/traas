@@ -62,7 +62,19 @@ Provisioning requirements
 
 * Create a keypair in nova
 * Clone this repo's **dev** branch and customize the
- `example-environments/rdo-cloud-env.yaml` file as you want it.
+ `example-environments/rdo-cloud-env.yaml` file or another example as you want it.
+
+Add a few default sec group rules:
+
+    $ openstack --os-cloud rdo-cloud security group rule create \
+      --ingress \
+      --protocol tcp --dst-port 22 \
+      default
+
+    $ openstack --os-cloud rdo-cloud security group rule create \
+      --ingress \
+      --protocol icmp \
+      default
 
 At this point, you are ready to go with your deployment.
 

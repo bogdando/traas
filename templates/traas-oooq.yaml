@@ -83,11 +83,6 @@ parameters:
     default: CentOS-7-x86_64-GenericCloud-1503
     description: Image to boot as the undercloud instance
 
-  ssh_ingress_cidr:
-    type: string
-    default: 0.0.0.0/0
-    description: Allow SSH access to undercloud node
-
   cluster_ingress_cidr:
     type: string
     default: 0.0.0.0/0
@@ -101,12 +96,6 @@ resources:
       name: sg
       description: Sec group for UC
       rules:
-      - protocol: icmp
-      - direction: ingress
-        protocol: tcp
-        port_range_min: 22
-        port_range_max: 22
-        remote_ip_prefix: { get_param: ssh_ingress_cidr }
       - direction: ingress
         protocol: udp
         remote_ip_prefix: { get_param: cluster_ingress_cidr }

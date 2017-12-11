@@ -9,5 +9,4 @@ parameters:
   undercloud_image: CentOS-7-x86_64-GenericCloud-1708
   undercloud_flavor: m1.large
   # curl https://api.ipify.org
-  #ssh_ingress_cidr: <external IP/32 of control/admin node to access nodes>
   #cluster_ingress_cidr: <external IP/32 of control/admin node to access nodes>
