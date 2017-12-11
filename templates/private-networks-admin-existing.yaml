@@ -4,6 +4,7 @@ heat_template_version: 2015-04-30
 # routed to an external network.
 # This template just passes through the name of an already created
 # private networks.
+# Expects a pre-created router, network and a subnet 192.168.0.0/24.
 
 parameters:
 

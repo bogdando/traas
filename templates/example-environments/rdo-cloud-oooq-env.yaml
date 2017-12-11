@@ -3,11 +3,11 @@ parameters:
   overcloud_image: CentOS-7-x86_64-GenericCloud-1708
   key_name: bdobreli-rdo-cloud
   private_net_admin: private
-  private_net_cluster: private2
   controller_node_count: 1
   compute_node_count: 0
   public_net:  38.145.32.0/22
   undercloud_image: CentOS-7-x86_64-GenericCloud-1708
   undercloud_flavor: m1.large
-  #ssh_ingress_cidr: <external IP/32 of control/admin node to access UC>
-  #cluster_ingress_cidr: <overcloud cluster network CIDR>
+  # curl https://api.ipify.org
+  #ssh_ingress_cidr: <external IP/32 of control/admin node to access nodes>
+  #cluster_ingress_cidr: <external IP/32 of control/admin node to access nodes>

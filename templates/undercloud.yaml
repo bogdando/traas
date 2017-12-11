@@ -13,7 +13,7 @@ parameters:
     type: string
   private_net_admin:
     type: string
-  private_net_cluster:
+  undercloud_private_net_cluster:
     type: string
   public_net:
     type: string
@@ -32,7 +32,7 @@ resources:
       key_name: {get_param: key_name}
       networks:
       - network: {get_param: private_net_admin}
-      - network: {get_param: private_net_cluster}
+      - network: {get_param: undercloud_private_net_cluster}
       security_groups:
         - "default"
         - {get_param: sg}

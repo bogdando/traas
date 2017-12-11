@@ -23,9 +23,6 @@ parameters:
   overcloud_user_data:
     type: string
 
-  sg:
-    type: string
-
   # requires ocata
   #tags:
   #  type: string
@@ -43,9 +40,7 @@ resources:
       networks:
         - {network: {get_param: private_net_admin}}
         - {network: {get_param: private_net_cluster}}
-      security_groups:
-        - "default"
-        - {get_param: sg}
+      security_groups: null
       name: {get_param: overcloud_name}
       software_config_transport: POLL_SERVER_HEAT
       user_data: {get_param: overcloud_user_data}

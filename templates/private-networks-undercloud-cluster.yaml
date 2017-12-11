@@ -1,0 +1,27 @@
+heat_template_version: 2015-04-30
+
+parameters:
+
+  undercloud_private_net_cluster:
+    type: string
+
+  undercloud_private_net_cluster_cidr:
+    type: string
+
+resources:
+  uc_data_net:
+    type: OS::Neutron::Net
+    properties:
+      name: {get_param: undercloud_private_net_cluster}
+
+  uc_data_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      name: {get_param: undercloud_private_net_cluster}
+      network: { get_resource: uc_data_net }
+      cidr: {get_param: undercloud_private_net_cluster_cidr}
+      gateway_ip: null
+
+outputs:
+  undercloud_private_net_cluster:
+    value: {get_param: undercloud_private_net_cluster}

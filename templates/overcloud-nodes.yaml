@@ -36,18 +36,12 @@ parameters:
 
   private_net_cluster:
     type: string
-    default: private2
     description: Name of a private cluster network
 
   overcloud_name:
     type: string
     default: overcloud
     description: Name of the overcloud instances. The name will be prefixed with the stack name.
-
-  sg:
-    type: string
-    default: ''
-    description: Neutron sec group
 
   overcloud_user_data:
     type: string
@@ -67,7 +61,6 @@ resources:
           private_net_admin: {get_param: private_net_admin}
           private_net_cluster: {get_param: private_net_cluster}
           overcloud_user_data: {get_param: overcloud_user_data}
-          sg: {get_param: sg}
           #tags: controller
           overcloud_name:
             list_join:
@@ -89,7 +82,6 @@ resources:
           private_net_admin: {get_param: private_net_admin}
           private_net_cluster: {get_param: private_net_cluster}
           overcloud_user_data: {get_param: overcloud_user_data}
-          sg: {get_param: sg}
           #tags: compute
           overcloud_name:
             list_join:

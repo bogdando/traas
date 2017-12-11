@@ -23,16 +23,21 @@ the Heat SoftwareDeployment, is located under the `scripts/traas-oooq.sh` path.
 
 > **note**
 >
-> provisioning of networks and routers, and basically calling the very
+> provisioning of admin network and routers, and basically calling the very
 > deployment steps, like running your ansible-playbooks for OpenStack, have yet
 > to be automated and remain manual steps. You may want to use the placeholder
 > script `scripts/traas-oooq.sh` to host them there.
 
-The Heat templates are used to bring up an environment on top of existing
-Neutron networks and routers of the host OpenStack cloud, like RDO cloud. It
-connects the pre-created admin/public networks to an undercloud VM and
-admin/cluster networks to overcloud VMs. And then triggers some
-SoftwareDeployment resources on the undercloud node to execute a deployment job
+The Heat templates are used to bring up an environment on top of existing admin
+Neutron network and routers of the host OpenStack cloud, like RDO cloud. It
+connects the existing admin network and public networks to the undercloud VM.
+The overcloud VMs do not have sec groups enabled and no floating IPs. It also
+creates for undercloud and overcloud an isolated, non-routed cluster networks
+of given CIDR ranges. Those are mostly needed to manipulate with bridges while
+doing net config steps by t-h-t. Undercloud only needs this for all-in-one.
+
+Finally, it triggers some SoftwareDeployment resources on the undercloud node to
+execute a deployment job (nooped for now).
 
 See also
 [deployed-server](https://docs.openstack.org/tripleo-docs/latest/install/advanced_deployment/deployed_server.html).
@@ -41,30 +46,23 @@ Provisioning requirements
 =========================
 
 * A non admin tenant on the host OpenStack cloud, say RDO cloud.
-* Create an admin, cluster, public networks and routers, e.g. per this
+* Create an admin and public networks and routers, e.g. per this
   [RDO cloud doc](https://docs.google.com/document/d/1bFEayAH7Mqi7zn7fpdMS3Zc-plOOnqoGqh7cDNjLxB8/edit#heading=h.2wr6dc75ub5y).
   Name it to match the example `templates/example-environments/rdo-cloud-oooq-env.yaml`
   file and/or modify the latter as needed, see the steps below. Note that the
-  cluster network may be isolated and does not require a DHCP or router connections
-  created.
+  overcloud cluster network will be isolated, unrouted, without ports security
+  and DHCP or router connections created.
 
 > **note**
 >
-> Do not choose an admin network subnet that would overlap with a subnet you plan
+> Do not choose networks' subnets that would overlap with a subnet you plan
 > to use for developing TripleO. The default subnet for TripleO is 192.168.24.0/24.
-> So choose a subnet that does not overlap with this CIDR. Defaults to 192.168.0.0/24.
+> So choose a subnet that does not overlap with this CIDR. Admin network is
+> expected to be a '192.168.0.0/24'.
 
 * Create a keypair in nova
 * Clone this repo's **dev** branch and customize the
  `example-environments/rdo-cloud-env.yaml` file as you want it.
-
-> **note**
->
-> After VMs provisioned, make sure to disable Neutron ports
-> security for the ports connected to the cluster network:
->
->    $ neutron port-update --no-security-groups <id>
->    $ neutron port-update <id> --port-security-enabled=False
 
 At this point, you are ready to go with your deployment.
 
