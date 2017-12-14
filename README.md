@@ -68,7 +68,12 @@ Add a few default sec group rules:
 
     $ openstack --os-cloud rdo-cloud security group rule create \
       --ingress \
-      --protocol tcp --dst-port 22 \
+      --protocol tcp \
+      default
+
+    $ openstack --os-cloud rdo-cloud security group rule create \
+      --ingress \
+      --protocol udp \
       default
 
     $ openstack --os-cloud rdo-cloud security group rule create \

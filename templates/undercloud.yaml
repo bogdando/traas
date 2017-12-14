@@ -34,7 +34,6 @@ resources:
       - network: {get_param: private_net_admin}
       - network: {get_param: undercloud_private_net_cluster}
       security_groups:
-        - "default"
         - {get_param: sg}
       name: {get_param: undercloud_name}
       user_data_format: SOFTWARE_CONFIG
