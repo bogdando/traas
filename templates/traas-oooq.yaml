@@ -95,6 +95,7 @@ resources:
       name: sg
       description: Sec group for UC
       rules:
+      - protocol: icmp
       - direction: ingress
         protocol: udp
         remote_ip_prefix: { get_param: cluster_ingress_cidr }
