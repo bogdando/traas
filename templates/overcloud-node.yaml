@@ -17,10 +17,19 @@ parameters:
   private_net_admin:
     type: string
 
+  private_subnet_admin:
+    type: string
+
   private_net_cluster:
     type: string
 
+  private_subnet_cluster:
+    type: string
+
   overcloud_user_data:
+    type: string
+
+  sg:
     type: string
 
   # requires ocata
@@ -28,6 +37,24 @@ parameters:
   #  type: string
 
 resources:
+
+  admin_port:
+    type: OS::Neutron::Port
+    properties:
+      network: {get_param: private_net_admin}
+      fixed_ips:
+        - subnet: {get_param: private_subnet_admin}
+      security_groups:
+        - "default"
+        - {get_param: sg}
+
+  data_port:
+    type: OS::Neutron::Port
+    properties:
+      network: {get_param: private_net_cluster}
+      port_security_enabled: false
+      fixed_ips:
+        - subnet: {get_param: private_subnet_cluster}
 
   overcloud_node:
     type: OS::Nova::Server
@@ -38,9 +65,8 @@ resources:
       key_name: {get_param: key_name}
       user_data_format: SOFTWARE_CONFIG
       networks:
-        - {network: {get_param: private_net_admin}}
-        - {network: {get_param: private_net_cluster}}
-      security_groups: null
+        - {port: {get_resource: admin_port}}
+        - {port: {get_resource: data_port}}
       name: {get_param: overcloud_name}
       software_config_transport: POLL_SERVER_HEAT
       user_data: {get_param: overcloud_user_data}

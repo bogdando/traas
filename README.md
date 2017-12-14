@@ -30,10 +30,12 @@ the Heat SoftwareDeployment, is located under the `scripts/traas-oooq.sh` path.
 
 The Heat templates are used to bring up an environment on top of existing admin
 Neutron network and routers of the host OpenStack cloud, like RDO cloud. It
-connects the existing admin network and public networks to the undercloud VM.
-The overcloud VMs do not have sec groups enabled and no floating IPs. It also
-creates for undercloud and overcloud an isolated, non-routed cluster networks
-of given CIDR ranges. Those are mostly needed to manipulate with bridges while
+connects the existing admin, cluster and public networks to the undercloud VM.
+The overcloud VMs have no floating IPs as not connected to the public net.
+
+It also creates for undercloud and overcloud an isolated, non-routed cluster network
+of a given CIDR. Overcloud nodes do not have sec groups enabled for the cluster
+network ports. This is mostly needed to manipulate with bridges, while
 doing net config steps by t-h-t. Undercloud only needs this for all-in-one.
 
 Finally, it triggers some SoftwareDeployment resources on the undercloud node to
@@ -50,8 +52,7 @@ Provisioning requirements
   [RDO cloud doc](https://docs.google.com/document/d/1bFEayAH7Mqi7zn7fpdMS3Zc-plOOnqoGqh7cDNjLxB8/edit#heading=h.2wr6dc75ub5y).
   Name it to match the example `templates/example-environments/rdo-cloud-oooq-env.yaml`
   file and/or modify the latter as needed, see the steps below. Note that the
-  overcloud cluster network will be isolated, unrouted, without ports security
-  and DHCP or router connections created.
+  cluster network will be isolated and unrouted.
 
 > **note**
 >
@@ -63,23 +64,6 @@ Provisioning requirements
 * Create a keypair in nova
 * Clone this repo's **dev** branch and customize the
  `example-environments/rdo-cloud-env.yaml` file or another example as you want it.
-
-Add a few default sec group rules:
-
-    $ openstack --os-cloud rdo-cloud security group rule create \
-      --ingress \
-      --protocol tcp \
-      default
-
-    $ openstack --os-cloud rdo-cloud security group rule create \
-      --ingress \
-      --protocol udp \
-      default
-
-    $ openstack --os-cloud rdo-cloud security group rule create \
-      --ingress \
-      --protocol icmp \
-      default
 
 At this point, you are ready to go with your deployment.
 

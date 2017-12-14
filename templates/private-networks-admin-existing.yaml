@@ -4,14 +4,19 @@ heat_template_version: 2015-04-30
 # routed to an external network.
 # This template just passes through the name of an already created
 # private networks.
-# Expects a pre-created router, network and a subnet 192.168.0.0/24.
+# Expects a pre-created router, network and a subnet with CIDR 192.168.0.0/24.
 
 parameters:
 
   private_net_admin:
+    default: private
     type: string
-    description: Name of private network for admin/control access
+  private_subnet_admin:
+    default: private
+    type: string
 
 outputs:
   private_net_admin:
     value: {get_param: private_net_admin}
+  private_subnet_admin:
+    value: {get_param: private_subnet_admin}
