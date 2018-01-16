@@ -225,3 +225,6 @@ outputs:
       list_join:
         - ' '
         - {get_attr: [overcloud_nodes, resource.compute_overcloud_nodes, overcloud_private_ip]}
+  public_key:
+    description: Public key for generated undercloud key to access overcloud
+    value: {get_attr: [oooq_job, resource.OooqJobUndercloudDeployment, public_key]}
