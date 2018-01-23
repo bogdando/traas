@@ -11,8 +11,9 @@ openstack-infra CI jobs. See also:
 * [OVB devmode](https://docs.openstack.org/tripleo-quickstart/latest/devmode-ovb.html)
 * The original [Traas announce](http://lists.openstack.org/pipermail/openstack-dev/2017-February/112993.html)
 
-The repository (hereafter just a 'fork') contains a set of Heat templates and
-wrapper scripts around quickstart and oooq-warp scripts and inventory vars.
+This branch (hereafter just a 'fork') fell behind and diverged of the master
+branch. It contains a set of Heat templates and wrapper scripts around quickstart
+and oooq-warp scripts and inventory vars.
 
 Just like original Traas, the fork could just be used when you have access to
 an OpenStack cloud with Heat that you want to use for TripleO development with
