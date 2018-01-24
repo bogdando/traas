@@ -208,7 +208,6 @@ resources:
     properties:
       type: string
       value: |
-        #!/bin/bash
         echo 'GATEWAYDEV=eth1' >> /etc/sysconfig/network
         cat >/etc/sysconfig/network-scripts/ifcfg-eth1<<EOF
         DEVICE=eth1
