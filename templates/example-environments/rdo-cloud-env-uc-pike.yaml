@@ -1,0 +1,27 @@
+parameters:
+  overcloud_flavor: m1.large
+  overcloud_image: CentOS-7-x86_64-GenericCloud-1708
+  key_name: bdobreli-rdo-cloud
+  private_net_admin: private
+  private_subnet_admin: private
+  private_net_cluster1: private1
+  private_subnet_cluster1: private1
+  private_net_cluster2: private2
+  private_subnet_cluster2: private2
+  private_net_cluster3: private3
+  private_subnet_cluster3: private3
+  overcloud_node_count: 0
+  public_net:  38.145.32.0/22
+  undercloud_image: CentOS-7-x86_64-GenericCloud-1708
+  undercloud_flavor: m1.medium
+  toci_jobtype: singlenode-featureset003
+  #ci_changes:
+  traas_repository: https://github.com/bogdando/traas
+  #tripleo_ci_remote: https://git.openstack.org/bogdando/tripleo-ci
+  #tripleo_ci_branch: dev
+  #zuul_changes:
+  #zuul_branch:
+  #overcloud_branch:
+  undercloud_branch: stable/pike
+  # See `curl https://api.ipify.org` to get your control/admin box IP
+  #cluster_ingress_cidr:
